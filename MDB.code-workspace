@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "my-database-project",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
