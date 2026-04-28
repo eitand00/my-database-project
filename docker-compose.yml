@@ -13,9 +13,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # מיפוי קובץ ה-SQL ישירות לתיקיית האתחול
-      - ./init-db/createTables.sql:/docker-entrypoint-initdb.d/01-create-tables.sql
-      # הוספת ה-/data כדי שהנתונים באמת יישמרו ולא יימחקו
       - postgres_data:/var/lib/postgresql
     networks:
       - zoo_network
