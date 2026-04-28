@@ -1,7 +1,6 @@
 # Database Project: World Cup Management System (World Cup DB)
 
-**Submitted by:** 
-* Binyamin Eliyahu Forkovich - 330995135
+**Submitted by:** * [Your Name] - [Your ID]
 * [Partner's Name, if applicable] - [Partner's ID]
 
 **Selected Unit:** Management of matches, players, and tournament statistics.
@@ -26,18 +25,10 @@ This system is designed to manage the complex data surrounding an international 
 ## System Characterization (AI Studio)
 **Link to the AI Studio project:** [Insert your AI Studio link here]
 
-**System Screens:**
-![Screen 1](images/screen1_image.png)
-*(Add more UI mockup images here as needed)*
-
 ---
 
 ## ERD and DSD Diagrams
-**Entity-Relationship Diagram (ERD):**
-![ERD Diagram](images/erd_image.png)
-
-**Data Structure Diagram (DSD):**
-![DSD Diagram](images/dsd_image.png)
+The Entity-Relationship Diagram (ERD) and Data Structure Diagram (DSD) have been generated and are included in the project files under the main directory.
 
 ---
 
@@ -52,31 +43,14 @@ During the database design phase, we made several key architectural decisions:
 ## Data Insertion Methods
 For this project, we populated the database using 3 distinct methods, fulfilling the requirement of at least 500 records per table and over 20,000 records in two specific tables:
 
-### 1. Manual Insertion (INSERT Statements)
-A generated SQL script containing 500 explicit `INSERT` statements to populate the `STADIUM` table.
-![Manual Insert](images/manual_insert_screenshot.png)
-
-### 2. External Tool (Mockaroo)
-Generated highly realistic dummy data for the `TEAM` and `PERSON` tables using Mockaroo, exporting the results as ready-to-run SQL scripts.
-![Mockaroo Generation](images/mockaroo_screenshot.png)
-
-### 3. Programming Method (Python - Critical Mass)
-Developed a Python script utilizing the `psycopg2` library. The script connects to the database, reads the base data, and generates referees, players, 550 matches, and over 20,000 match events and player statistics based on defined business logic.
-![Python Script Success](images/python_success_screenshot.png)
+1. **Manual Insertion (INSERT Statements):** A generated SQL script containing 500 explicit `INSERT` statements to populate the `STADIUM` table.
+2. **External Tool (Mockaroo):** Generated highly realistic dummy data for the `TEAM` and `PERSON` tables using Mockaroo, exporting the results as ready-to-run SQL scripts.
+3. **Programming Method (Python - Critical Mass):** Developed a Python script utilizing the `psycopg2` library. The script connects to the database, reads the base data, and generates referees, players, 550 matches, and over 20,000 match events and player statistics based on defined business logic.
 
 ---
 
 ## Backup and Restore
 We performed a full database backup using two different methods as required:
 
-### Method 1: Graphical User Interface (pgAdmin UI)
-A full backup was executed via the pgAdmin interface and successfully restored to a newly created, empty database (`test_restore_db`) to verify its integrity.
-**Screenshot - Executing the Backup:**
-![UI Backup](images/ui_backup_screenshot.png)
-**Screenshot - Executing the Restore:**
-![UI Restore](images/ui_restore_screenshot.png)
-
-### Method 2: Command Line Interface (CLI)
-A backup was generated using the `pg_dump` utility directly from within the Docker container to the host machine.
-**Screenshot - Running the Backup Command:**
-![CLI Backup](images/cli_backup_screenshot.png)
+1. **Graphical User Interface (pgAdmin UI):** A full backup was executed via the pgAdmin interface and successfully restored to a newly created, empty database to verify its integrity.
+2. **Command Line Interface (CLI):** A backup was generated using the `pg_dump` utility directly from within the Docker container to the host machine.
