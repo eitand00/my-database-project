@@ -1,7 +1,8 @@
 # Database Project: World Cup Management System (World Cup DB)
 
-**Submitted by:** * [Your Name] - [Your ID]
-* [Partner's Name, if applicable] - [Partner's ID]
+**Submitted by:** 
+* Binyamin Eliyahu Forkovich - 330995135
+* Eitan Dahan - 330824061
 
 **Selected Unit:** Management of matches, players, and tournament statistics.
 
