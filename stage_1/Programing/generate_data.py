@@ -4,11 +4,11 @@ import random
 from datetime import datetime, timedelta
 import sys
 
-# פרטי ההתחברות (זכור להחזיר את הסיסמה האמיתית שלך)
+
 DB_CONFIG = {
-    'dbname': 'world_cup_db', # או postgres בהתאם למה שהגדרת
-    'user': 'user_db', # <--- שם המשתמש שלך מה-Docker Compose
-    'password': 'password_db', # <--- הסיסמה שלך מה-Docker Compose
+    'dbname': 'my_database', # או postgres בהתאם למה שהגדרת
+    'user': 'user2', # <--- שם המשתמש שלך מה-Docker Compose
+    'password': 'etdahan111', # <--- הסיסמה שלך מה-Docker Compose
     'host': 'localhost',
     'port': '5432'
 }
