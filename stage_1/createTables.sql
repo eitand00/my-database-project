@@ -1,81 +1,74 @@
-CREATE TABLE PERSON
-(
-  ID INT NOT NULL,
-  Name VARCHAR(100) NOT NULL,
-  DateOfBirth DATE NOT NULL,
-  PRIMARY KEY (ID)
+-- 1. טבלת אנשים (בסיס לשחקנים ושופטים)
+CREATE TABLE PERSON (
+    ID VARCHAR(50) PRIMARY KEY,
+    Name VARCHAR(150)
 );
 
-CREATE TABLE TEAM
-(
-  TeamCode VARCHAR(3) NOT NULL,
-  CountryName VARCHAR(100) NOT NULL,
-  Confederation VARCHAR(50) NOT NULL,
-  PRIMARY KEY (TeamCode)
+-- 2. טבלת קבוצות/נבחרות
+CREATE TABLE TEAM (
+    TeamCode VARCHAR(50) PRIMARY KEY,
+    CountryName VARCHAR(100),
+    Confederation VARCHAR(100)
 );
 
-CREATE TABLE PLAYER
-(
-  Position VARCHAR(50) NOT NULL,
-  TeamCode VARCHAR(3) NOT NULL,
-  ID INT NOT NULL,
-  PRIMARY KEY (ID),
-  FOREIGN KEY (TeamCode) REFERENCES TEAM(TeamCode),
-  FOREIGN KEY (ID) REFERENCES PERSON(ID)
+-- 3. טבלת אצטדיונים
+CREATE TABLE STADIUM (
+    StadiumID VARCHAR(50) PRIMARY KEY,
+    City VARCHAR(100),
+    Name VARCHAR(150),
+    Capacity INT
 );
 
-CREATE TABLE REFEREE
-(
-  Years_of_experience INT NOT NULL CHECK (Years_of_experience >= 0),
-  ID INT NOT NULL,
-  PRIMARY KEY (ID),
-  FOREIGN KEY (ID) REFERENCES PERSON(ID)
+-- 4. טבלת שחקנים (יורשת מ-PERSON)
+CREATE TABLE PLAYER (
+    ID VARCHAR(50) PRIMARY KEY,
+    DateOfBirth DATE, 
+    Position VARCHAR(50),
+    TeamCode VARCHAR(50),
+    FOREIGN KEY (ID) REFERENCES PERSON(ID),
+    FOREIGN KEY (TeamCode) REFERENCES TEAM(TeamCode)
 );
 
-CREATE TABLE STADIUM
-(
-  StadiumID INT NOT NULL,
-  City VARCHAR(100) NOT NULL,
-  Name VARCHAR(100) NOT NULL,
-  Capacity INT NOT NULL CHECK (Capacity > 0),
-  PRIMARY KEY (StadiumID)
+-- 5. טבלת שופטים (יורשת מ-PERSON)
+CREATE TABLE REFEREE (
+    ID VARCHAR(50) PRIMARY KEY,
+    Years_of_experience INT,
+    FOREIGN KEY (ID) REFERENCES PERSON(ID)
 );
 
-CREATE TABLE MATCHES
-(
-  MatchID INT NOT NULL,
-  MatchDate DATE NOT NULL,
-  Stage VARCHAR(50) NOT NULL,
-  HomeTeamCode VARCHAR(3) NOT NULL,
-  AwayTeamCode VARCHAR(3) NOT NULL,
-  StadiumID INT NOT NULL,
-  RefereeID INT NOT NULL,
-  PRIMARY KEY (MatchID),
-  FOREIGN KEY (HomeTeamCode) REFERENCES TEAM(TeamCode),
-  FOREIGN KEY (AwayTeamCode) REFERENCES TEAM(TeamCode),
-  FOREIGN KEY (StadiumID) REFERENCES STADIUM(StadiumID),
-  FOREIGN KEY (RefereeID) REFERENCES REFEREE(ID),
-  CHECK (HomeTeamCode != AwayTeamCode)
+-- 6. טבלת משחקים (שונתה ל-MATCHES)
+CREATE TABLE MATCHES (
+    MatchID VARCHAR(50) PRIMARY KEY,
+    MatchDate DATE,
+    Stage VARCHAR(100),
+    HomeTeamCode VARCHAR(50),
+    AwayTeamCode VARCHAR(50),
+    StadiumID VARCHAR(50),
+    RefereeID VARCHAR(50),
+    FOREIGN KEY (HomeTeamCode) REFERENCES TEAM(TeamCode),
+    FOREIGN KEY (AwayTeamCode) REFERENCES TEAM(TeamCode),
+    FOREIGN KEY (StadiumID) REFERENCES STADIUM(StadiumID),
+    FOREIGN KEY (RefereeID) REFERENCES REFEREE(ID)
 );
 
-CREATE TABLE MATCH_EVENT
-(
-  Minute INT NOT NULL CHECK (Minute > 0 AND Minute <= 130),
-  EventType VARCHAR(50) NOT NULL,
-  MatchID INT NOT NULL,
-  PlayerID INT NOT NULL,
-  PRIMARY KEY (Minute, MatchID),
-  FOREIGN KEY (MatchID) REFERENCES MATCHES(MatchID),
-  FOREIGN KEY (PlayerID) REFERENCES PLAYER(ID)
+-- 7. טבלת אירועי משחק (מעודכנת להצביע ל-MATCHES)
+CREATE TABLE MATCH_EVENT (
+    Minute VARCHAR(10), 
+    MatchID VARCHAR(50),
+    EventType VARCHAR(50),
+    PlayerID VARCHAR(50),
+    PRIMARY KEY (Minute, MatchID, EventType, PlayerID), 
+    FOREIGN KEY (MatchID) REFERENCES MATCHES(MatchID),
+    FOREIGN KEY (PlayerID) REFERENCES PLAYER(ID)
 );
 
-CREATE TABLE PLAYER_MATCH_STATS
-(
-  MinutesPlayed INT NOT NULL CHECK (MinutesPlayed >= 0),
-  DistanceCovered NUMERIC(5,2) NOT NULL CHECK (DistanceCovered >= 0),
-  MatchID INT NOT NULL,
-  PlayerID INT NOT NULL,
-  PRIMARY KEY (MatchID, PlayerID),
-  FOREIGN KEY (MatchID) REFERENCES MATCHES(MatchID),
-  FOREIGN KEY (PlayerID) REFERENCES PLAYER(ID)
+-- 8. טבלת סטטיסטיקות שחקן במשחק (מעודכנת להצביע ל-MATCHES)
+CREATE TABLE PLAYER_MATCH_STATS (
+    MatchID VARCHAR(50),
+    PlayerID VARCHAR(50),
+    MinutesPlayed INT,
+    DistanceCovered FLOAT,
+    PRIMARY KEY (MatchID, PlayerID),
+    FOREIGN KEY (MatchID) REFERENCES MATCHES(MatchID),
+    FOREIGN KEY (PlayerID) REFERENCES PLAYER(ID)
 );
