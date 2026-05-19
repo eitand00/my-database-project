@@ -1,10 +1,10 @@
-# Database Project: World Cup Management System (World Cup DB)
+# Database Project: World Cup Statistics (Phase A)
 
 **Submitted by:** 
 * Binyamin Eliyahu Forkovich - 330995135
 * Eitan Dahan - 330824061
 
-**Selected Unit:** Management of matches, players, and tournament statistics.
+**Selected Unit:** Analysis of matches, players, and tournament statistics.
 
 ---
 
@@ -13,45 +13,60 @@
 2. [System Characterization (AI Studio)](#system-characterization-ai-studio)
 3. [ERD and DSD Diagrams](#erd-and-dsd-diagrams)
 4. [Design Decisions](#design-decisions)
-5. [Data Insertion Methods](#data-insertion-methods)
-6. [Backup and Restore](#backup-and-restore)
+5. [Backup and Restore](#backup-and-restore)
 
 ---
 
 ## Introduction
-This system is designed to manage the complex data surrounding an international football tournament (such as the World Cup). The database stores information about national teams, stadiums, referees, and players. The core functionality of the system is managing and documenting matches, including specific match events (goals, cards, substitutions) down to the minute, and collecting precise statistics for each player at the end of a match (minutes played, distance covered). The system supports complex data retrieval for analyzing player and team performance throughout the tournament.
+This system is designed to analyze the complex statistics surrounding the FIFA World Cup. The project utilizes a **real historical dataset** of past World Cups, processing authentic records into a normalized relational structure. The core functionality focuses on tracking historical matches, documenting specific events (goals, cards) per minute, and collecting precise statistics for each player. The system supports complex data retrieval for analyzing player and team performance based on real-world football history.
 
 ---
 
 ## System Characterization (AI Studio)
+The initial user interfaces and statistical dashboards were characterized using Google AI Studio. 
+
 **Link to the AI Studio project:** [Insert your AI Studio link here]
+
+**System Screens:**
+![Home Screen](images/S1.png)
+![Team stats](images/S2.png)
+![Player stats](images/S3.png)
+![Match summary](images/S4.png)
 
 ---
 
 ## ERD and DSD Diagrams
-The Entity-Relationship Diagram (ERD) and Data Structure Diagram (DSD) have been generated and are included in the project files under the main directory.
+The logical and physical structures of our database, designed to optimally query statistical data.
+
+**Entity-Relationship Diagram (ERD):**
+![ERD Diagram](images/ERD.png)
+
+**Data Structure Diagram (DSD):**
+![DSD Diagram](images/DSD.png)
 
 ---
 
 ## Design Decisions
 During the database design phase, we made several key architectural decisions:
-* **Super-type / Sub-type Entities:** We created a central `PERSON` table containing shared attributes (ID, Name, Date of Birth). The `PLAYER` and `REFEREE` tables inherit from it. This normalizes the database, prevents data duplication, and simplifies entity management.
-* **Association Tables for Events and Stats:** Instead of storing complex arrays within a match record, we created dedicated tables (`MATCH_EVENT` and `PLAYER_MATCH_STATS`) linked to both the match and the player. This allows us to insert an unlimited number of events and efficiently retrieve statistics using `GROUP BY` aggregations.
-* **Cascade Deletion:** We utilized the `CASCADE` constraint in our drop scripts to ensure a safe and efficient teardown of the database environment without encountering foreign key violation errors.
-
----
-
-## Data Insertion Methods
-For this project, we populated the database using 3 distinct methods, fulfilling the requirement of at least 500 records per table and over 20,000 records in two specific tables:
-
-1. **Manual Insertion (INSERT Statements):** A generated SQL script containing 500 explicit `INSERT` statements to populate the `STADIUM` table.
-2. **External Tool (Mockaroo):** Generated highly realistic dummy data for the `TEAM` and `PERSON` tables using Mockaroo, exporting the results as ready-to-run SQL scripts.
-3. **Programming Method (Python - Critical Mass):** Developed a Python script utilizing the `psycopg2` library. The script connects to the database, reads the base data, and generates referees, players, 550 matches, and over 20,000 match events and player statistics based on defined business logic.
+* **Super-type / Sub-type Entities:** We created a central `PERSON` table containing shared attributes, from which `PLAYER` and `REFEREE` inherit. This prevents data duplication and simplifies statistical groupings.
+* **Association Tables for Events and Stats:** We created dedicated tables (`MATCH_EVENT` and `PLAYER_MATCH_STATS`) linked to both the match and the player, allowing granular event tracking and efficient `GROUP BY` aggregations.
+* **Real Historical Data Integration:** We adapted our schema to strictly accommodate real-world datasets, ensuring our data types and constraints match authentic historical scenarios without fabricating records.
+* **Cascade Deletion:** We utilized the `CASCADE` constraint in our drop scripts to ensure a safe and efficient teardown of the database environment.
 
 ---
 
 ## Backup and Restore
 We performed a full database backup using two different methods as required:
 
-1. **Graphical User Interface (pgAdmin UI):** A full backup was executed via the pgAdmin interface and successfully restored to a newly created, empty database to verify its integrity.
-2. **Command Line Interface (CLI):** A backup was generated using the `pg_dump` utility directly from within the Docker container to the host machine.
+### Method 1: Graphical User Interface (pgAdmin UI)
+A full backup was executed via the pgAdmin interface and successfully restored to a newly created, empty database to verify its integrity.
+**Executing the Backup:**
+![UI Backup](images/backup.png)
+
+**Executing the Restore:**
+![UI Restore](images/restore.png)
+
+### Method 2: Command Line Interface (CLI)
+A backup was generated using the `pg_dump` utility directly from within the Docker container to the host machine.
+**Running the Backup Command:**
+![CLI Backup](images/bsckup_file.png)
