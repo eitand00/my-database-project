@@ -1,8 +1,3 @@
--- ============================================
--- VIEW MATCHES WITH REAL DATA (Events + Stats)
--- ============================================
-
--- Find a match that has both events AND player stats
 SELECT 
   m.MatchID,
   m.MatchDate,

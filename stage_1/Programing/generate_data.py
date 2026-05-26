@@ -137,7 +137,6 @@ def main():
         red_bookings['EventType'] = 'Red Card'
         events.append(red_bookings[['match_id', 'minute_label', 'player_id', 'EventType']])
 
-        # אם שחקן קיבל שני כרטיסי צהוב במשחק, זה גם נחשף כ-Red Card נוסף
         second_yellow = (yellow_bookings
                          .sort_values(['match_id', 'player_id', 'minute_label'])
                          .groupby(['match_id', 'player_id'])
