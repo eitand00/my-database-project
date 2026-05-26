@@ -17,3 +17,21 @@ This project is a comprehensive database system focused on **analyzing statistic
 * **Database:** PostgreSQL (Dockerized)
 * **Data Processing & ETL:** Python for data processing.
 * **Design Tools:** ERDPlus, Google AI Studio
+
+## Quick Start
+
+If you have Docker and Docker Compose installed, use these commands.
+
+1) First-time (start DB + pgAdmin, then run importer):
+
+```bash
+docker compose up -d db pgadmin
+docker compose --profile import run --rm importer
+```
+
+2) Troubleshooting / explicit run (bypass image CMD and show script errors directly):
+
+```bash
+docker compose --profile import run --rm -T importer python -u stage_1/Programing/generate_data.py
+```
+

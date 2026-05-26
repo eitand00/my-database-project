@@ -1,16 +1,23 @@
+import os
+from pathlib import Path
 import psycopg2
 from psycopg2.extras import execute_batch
 import pandas as pd
 import numpy as np
 
-# הגדרות ההתחברות שלך
+# Docker-friendly DB config: read from environment with sensible defaults
+# Preferred env vars: DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 DB_CONFIG = {
-    'dbname': 'my_database',
-    'user': 'user2',
-    'password': 'etdahan111',
-    'host': 'localhost',
-    'port': '5432'
+    'dbname': os.getenv('DB_NAME', os.getenv('DB_NAME_SECRET', 'my_database')),
+    'user': os.getenv('DB_USER', os.getenv('DB_USER_SECRET', 'user2')),
+    'password': os.getenv('DB_PASSWORD', os.getenv('DB_PASSWORD_SECRET', 'etdahan111')),
+    'host': os.getenv('DB_HOST', 'db'),
+    'port': os.getenv('DB_PORT', '5432')
 }
+
+# DATASET_DIR can be passed via env var; default is project-root/dataset
+BASE_DIR = Path(__file__).resolve().parents[2]
+DATASET_DIR = Path(os.getenv('DATASET_DIR', str(BASE_DIR / 'dataset')))
 
 def clean_df_for_db(df):
     """פונקציית עזר להמרת ערכים חסרים (NaN) ל-None כדי ש-Postgres יקבל אותם כ-NULL"""
@@ -26,18 +33,18 @@ def main():
         return
 
     try:
-        print("Reading CSV files...")
-        players_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\players.csv')
-        referees_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\referees.csv')
-        teams_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\teams.csv')
-        stadiums_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\stadiums.csv')
-        matches_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\matches.csv')
-        ref_apps_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\referee_appearances.csv')
-        squads_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\squads.csv')
-        goals_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\goals.csv')
-        bookings_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\bookings.csv')
-        subs_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\substitutions.csv')
-        player_apps_df = pd.read_csv('C:\\Users\\TOP\\Downloads\\archive (2)\\player_appearances.csv')
+        print(f"Reading CSV files from {DATASET_DIR}...")
+        players_df = pd.read_csv(str(DATASET_DIR / 'players.csv'))
+        referees_df = pd.read_csv(str(DATASET_DIR / 'referees.csv'))
+        teams_df = pd.read_csv(str(DATASET_DIR / 'teams.csv'))
+        stadiums_df = pd.read_csv(str(DATASET_DIR / 'stadiums.csv'))
+        matches_df = pd.read_csv(str(DATASET_DIR / 'matches.csv'))
+        ref_apps_df = pd.read_csv(str(DATASET_DIR / 'referee_appearances.csv'))
+        squads_df = pd.read_csv(str(DATASET_DIR / 'squads.csv'))
+        goals_df = pd.read_csv(str(DATASET_DIR / 'goals.csv'))
+        bookings_df = pd.read_csv(str(DATASET_DIR / 'bookings.csv'))
+        subs_df = pd.read_csv(str(DATASET_DIR / 'substitutions.csv'))
+        player_apps_df = pd.read_csv(str(DATASET_DIR / 'player_appearances.csv'))
 
         print("Processing and inserting data. Please wait...")
 
