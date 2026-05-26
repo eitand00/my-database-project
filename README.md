@@ -19,9 +19,6 @@ This project is a comprehensive database system focused on **analyzing statistic
 * **Design Tools:** ERDPlus, Google AI Studio
 
 ## Quick Start
-
-If you have Docker and Docker Compose installed, use these commands.
-
 Required configuration:
 
 - `DB_USER_SECRET` - PostgreSQL username used by the database container
@@ -31,6 +28,9 @@ Required configuration:
 - `PGADMIN_PASSWORD` - login password for pgAdmin
 
 You can copy `.env.example` to `.env` and edit the values before running Docker Compose.
+
+build importer image:
+docker compose build importer
 
 1) First-time (start DB + pgAdmin, then run importer):
 
