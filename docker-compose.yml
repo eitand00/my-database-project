@@ -14,6 +14,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+      - ./stage_1:/stage_1:ro
     networks:
       - zoo_network
     healthcheck:
@@ -51,7 +52,8 @@ services:
     container_name: data_importer
     working_dir: /app
     volumes:
-      - ./:/app
+      - ./stage_1:/app/stage_1
+      - ./dataset:/app/dataset
     command: ["python", "-u", "stage_1/Programing/generate_data.py"]
     environment:
       DB_NAME: ${DB_NAME_SECRET}

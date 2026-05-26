@@ -22,6 +22,16 @@ This project is a comprehensive database system focused on **analyzing statistic
 
 If you have Docker and Docker Compose installed, use these commands.
 
+Required configuration:
+
+- `DB_USER_SECRET` - PostgreSQL username used by the database container
+- `DB_PASSWORD_SECRET` - PostgreSQL password used by the database container
+- `DB_NAME_SECRET` - PostgreSQL database name
+- `PGADMIN_EMAIL` - login email for pgAdmin
+- `PGADMIN_PASSWORD` - login password for pgAdmin
+
+You can copy `.env.example` to `.env` and edit the values before running Docker Compose.
+
 1) First-time (start DB + pgAdmin, then run importer):
 
 ```bash
@@ -29,9 +39,19 @@ docker compose up -d db pgadmin
 docker compose --profile import run --rm importer
 ```
 
-2) Troubleshooting / explicit run (bypass image CMD and show script errors directly):
+2) If the schema file changed, recreate the DB schema using the mounted file:
+
+```bash
+docker compose exec db sh -lc 'psql -U user_db -d world_cup_db -f /stage_1/createTables.sql'
+```
+
+3) Troubleshooting / explicit run (bypass image CMD and show script errors directly):
 
 ```bash
 docker compose --profile import run --rm -T importer python -u stage_1/Programing/generate_data.py
 ```
+
+Notes:
+- The database container only mounts `./stage_1` at `/stage_1`, which is the path used in the schema command above.
+- The importer mounts `./stage_1` and `./dataset` so it can read the ETL script and CSV files from the host.
 
