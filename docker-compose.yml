@@ -14,8 +14,14 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+      - ./stage_1:/stage_1:ro
     networks:
       - zoo_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER_SECRET} -d ${DB_NAME_SECRET}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       
   # -------------------------
   # pgAdmin
@@ -35,6 +41,34 @@ services:
       - db
     networks:
       - zoo_network
+
+  # -------------------------
+  # Python importer
+  # -------------------------
+  importer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: data_importer
+    working_dir: /app
+    volumes:
+      - ./stage_1:/app/stage_1
+      - ./dataset:/app/dataset
+    command: ["python", "-u", "stage_1/Programing/generate_data.py"]
+    environment:
+      DB_NAME: ${DB_NAME_SECRET}
+      DB_USER: ${DB_USER_SECRET}
+      DB_PASSWORD: ${DB_PASSWORD_SECRET}
+      DB_HOST: db
+      DB_PORT: 5432
+      DATASET_DIR: /app/dataset
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - zoo_network
+    profiles:
+      - import
 
 # -------------------------
 # Volumes
