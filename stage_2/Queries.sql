@@ -240,19 +240,14 @@ HAVING COUNT(me.matcheventid) > 2
 ORDER BY total_goals_scored DESC;
 
 
--- query 1 delete : Delete match events for matches that were friendlies before 2014    
-DELETE FROM match_event
-WHERE matchid IN (
-    SELECT matchid 
-    FROM match 
-    WHERE LOWER(stage) = 'friendly' AND EXTRACT(YEAR FROM matchdate) < 2014
-);
+-- query 1 delete : Delete referees who have not officiated any matches
+DELETE FROM referee r
+WHERE NOT EXISTS (SELECT 1 FROM match m WHERE m.refereeid = r.id);
 
 
--- query 2 delete : Delete player match stats for players who played as 'Unknown' or NULL position
-DELETE FROM player_match_stats
-WHERE position IS NULL OR LOWER(position) = 'unknown';
-
+-- query 2 delete : Delete stadiums that have not hosted any matches
+DELETE FROM stadium
+WHERE StadiumID NOT IN (SELECT DISTINCT StadiumID FROM match);
 
 
 -- query 3 delete : Delete matches that were played in stadiums with a capacity less than 10000 and that do not have any match events recorded
