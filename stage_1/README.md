@@ -1,72 +1,41 @@
-# Database Project: World Cup Statistics (Phase A)
+# דו"ח פרויקט מונדיאל - שלב א'
 
-**Submitted by:** 
-* Binyamin Eliyahu Forkovich - 330995135
-* Eitan Dahan - 330824061
+בשלב זה התמקדנו בהקמת סביבת בסיס הנתונים, תכנון הסכמה, אכלוס הנתונים וביצוע תהליכי תחזוקה שוטפים כגון גיבוי ושחזור.
 
-**Selected Unit:** Analysis of matches, players, and tournament statistics.
+## 1. בחירת הנושא ויצירת מסד הנתונים
+החלטנו להתמקד בפיתוח בסיס נתונים עבור **סטטיסטיקות של משחקי המונדיאל (גביע העולם בכדורגל)**. המטרה הייתה ליצור מערכת שתוכל לשלוף, לנתח ולהציג מידע היסטורי מורכב על שחקנים, נבחרות, אירועי משחק (שערים, כרטיסים) וסטטיסטיקות אגרגטיביות, ולא מערכת לניהול טורנירים.
 
----
+הקמנו את מסד הנתונים בסביבת PostgreSQL, תוך יצירת סכמה רלציונית מלאה הכוללת מפתחות ראשיים (PK), מפתחות זרים (FK) לקישור בין הטבלאות (כגון שיוך שחקנים לנבחרות וקישור אירועים למשחקים), ואילוצים בסיסיים לשמירה על שלמות הנתונים.
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [System Characterization (AI Studio)](#system-characterization-ai-studio)
-3. [ERD and DSD Diagrams](#erd-and-dsd-diagrams)
-4. [Design Decisions](#design-decisions)
-5. [Backup and Restore](#backup-and-restore)
+## 2. אכלוס הנתונים (Data Population) והמעבר לנתוני אמת
+תהליך אכלוס מסד הנתונים שלנו עבר שתי פאזות משמעותיות במהלך העבודה:
 
----
+* **פאזה ראשונה (נתונים פיקטיביים):**
+  בתחילת העבודה, ובהתאם להנחיות הראשוניות, אכלסנו את הטבלאות בנתונים שג'ונרטו באופן אוטומטי. עשינו שימוש בכלים כמו **Mockaroo** וכתבנו סקריפטים ב-**Python** כדי לייצר רשומות רנדומליות של שחקנים, משחקים ואירועים לצורך בדיקת המבנה הלוגי.
 
-## Introduction
-This system is designed to analyze the complex statistics surrounding the FIFA World Cup. The project utilizes a **real historical dataset** of past World Cups, processing authentic records into a normalized relational structure. The core functionality focuses on tracking historical matches, documenting specific events (goals, cards) per minute, and collecting precise statistics for each player. The system supports complex data retrieval for analyzing player and team performance based on real-world football history.
+* **פאזה שנייה (המעבר ל-Dataset היסטורי אמיתי):**
+  ככל שהתקדמנו, החלטנו לקחת את הפרויקט צעד קדימה כדי לייצר מערכת בעלת ערך אמיתי ושימושי. זנחנו את הנתונים המג'ונרטים ואיתרנו **Dataset רשמי ומקיף הכולל את כל משחקי המונדיאל ההיסטוריים החל משנת 1930**. 
+  *(הערה: נמנענו מהכנסת נתונים מטורנירים מוקדמים או שוליים שבהם היו חסרים נתונים קריטיים, כדי לא לפגוע באמינות השאילתות).*
 
----
-
-## System Characterization (AI Studio)
-The initial user interfaces and statistical dashboards were characterized using Google AI Studio. 
-
-**Link to the AI Studio project:** [Insert your AI Studio link here]
-
-**System Screens:**
-![Home Screen](images/S1.png)
-![Team stats](images/S2.png)
-![Player stats](images/S3.png)
-![Match summary](images/S4.png)
+* **תהליך ההתאמה (Data Cleaning & Adaptation):**
+  הכנסת הנתונים האמיתיים דרשה מאיתנו לבצע סדרה של התאמות טכניות. נאלצנו לנקות את המידע הגולמי, לותר על כמה שדות שלא היו קיימים ב-Dataset, ולתקן פורמטים של תאריכים ודקות משחק (למשל, תוספות זמן כמו '90+5') כדי שהרשומות יתאימו במדויק לסכמה ול-Data Types שהגדרנו במערכת.
 
 ---
 
-## ERD and DSD Diagrams
-The logical and physical structures of our database, designed to optimally query statistical data.
+## 3. תהליכי גיבוי ושחזור (Backup and Restore)
+כחלק מדרישות השלב, ולאחר שמסד הנתונים אוכלס בנתוני האמת, ביצענו גיבוי מלא של המערכת ואימתנו את תקינותו באמצעות שתי שיטות שונות:
 
-**Entity-Relationship Diagram (ERD):**
-![ERD Diagram](images/ERD.png)
+### שיטה 1: ממשק משתמש גרפי (pgAdmin UI)
+גיבוי מלא בוצע דרך הממשק הגרפי של pgAdmin. לאחר מכן, הגיבוי שוחזר בהצלחה לתוך בסיס נתונים חדש וריק לחלוטין כדי לאמת את שלמות הנתונים ולוגיקת המפתחות.
 
-**Data Structure Diagram (DSD):**
-![DSD Diagram](images/DSD.png)
+**ביצוע הגיבוי:**
+![גיבוי UI](images/backup.png)
 
----
+**ביצוע השחזור:**
+![שחזור UI](images/restore.png)
 
-## Design Decisions
-During the database design phase, we made several key architectural decisions:
-* **Super-type / Sub-type Entities:** We created a central `PERSON` table containing shared attributes, from which `PLAYER` and `REFEREE` inherit. This prevents data duplication and simplifies statistical groupings.
-* **Association Tables for Events and Stats:** We created dedicated tables (`MATCH_EVENT` and `PLAYER_MATCH_STATS`) linked to both the match and the player, allowing granular event tracking and efficient `GROUP BY` aggregations.
-* **Real Historical Data Integration:** We adapted our schema to strictly accommodate real-world datasets, ensuring our data types and constraints match authentic historical scenarios without fabricating records.
-* **Cascade Deletion:** We utilized the `CASCADE` constraint in our drop scripts to ensure a safe and efficient teardown of the database environment.
+### שיטה 2: שורת הפקודה (CLI)
+גיבוי נוסף נוצר באמצעות כלי שורת הפקודה `pg_dump`. הפקודה הורצה ישירות מתוך קונטיינר ה-Docker שבו רץ המסד, וקובץ הגיבוי חולץ ונשמר בהצלחה על המחשב המארח (Host machine).
 
----
-
-## Backup and Restore
-We performed a full database backup using two different methods as required:
-
-### Method 1: Graphical User Interface (pgAdmin UI)
-A full backup was executed via the pgAdmin interface and successfully restored to a newly created, empty database to verify its integrity.
-**Executing the Backup:**
-![UI Backup](images/backup.png)
-
-**Executing the Restore:**
-![UI Restore](images/restore.png)
-
-### Method 2: Command Line Interface (CLI)
-A backup was generated using the `pg_dump` utility directly from within the Docker container to the host machine.
-**Running the Backup Command:**
-![CLI Backup](images/bsckup_file.png)
+**הרצת פקודת הגיבוי ב-CLI:**
+![גיבוי CLI](images/bsckup_file.png)
