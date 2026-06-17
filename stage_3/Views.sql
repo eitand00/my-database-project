@@ -23,10 +23,10 @@ JOIN TEAM gt ON m.GuestTeamCode = gt.TeamCode;
 
 -- --- שאילתות על מבט 1 (להרצה בנפרד לצורך צילומי מסך) ---
 
--- שאילתה 1.1: שליפת המשחקים שבהם הקבוצה הביתית הייתה פייבוריטית ברורה לניצחון
+-- שאילתה 1.1: שליפת המשחקים שבהם הקבוצה הביתית הייתה פייבוריטית לניצחון
 SELECT HomeTeam, GuestTeam, Stage, home_win_odd 
 FROM WorldCup_Odds_View 
-WHERE home_win_odd < 2.0
+WHERE home_win_odd < 3.0
 ORDER BY home_win_odd ASC;
 
 -- שאילתה 1.2: שליפת 5 המשחקים עם יחס הזכייה הגבוה ביותר לתיקו
