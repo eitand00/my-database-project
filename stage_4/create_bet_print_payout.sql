@@ -21,8 +21,8 @@ BEGIN
         v_bet_amount := floor(random() * 150 + 50);
         v_random_prediction := v_predictions[1 + floor(random() * array_length(v_predictions, 1))];
 
-        -- 4. [זימון פרוצדורה] ביצוע ההימור בפועל על המשתמש הקיים
-        CALL Place_Match_Bet(v_existing_user_id, v_match_with_odds, v_bet_amount, v_random_prediction);
+        -- 4. [זימון פרוצדורה] ביצוע ההימור בפועל על המשתמש הקיים (השם תוקן)
+        CALL create_bet(v_existing_user_id, v_match_with_odds, v_bet_amount, v_random_prediction);
         
         -- 5. שליפת ה-ID של ההימור האחרון שבוצע על ידי המשתמש הנוכחי
         SELECT MAX(bet_id) INTO v_latest_bet_id FROM bets WHERE user_id = v_existing_user_id;
