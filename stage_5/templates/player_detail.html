@@ -19,12 +19,14 @@
           <p class="mb-1">Date of Birth: {{ player.dateofbirth or 'N/A' }}</p>
           {% if player.wikipediapage %}<a href="{{ player.wikipediapage }}" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-box-arrow-up-right"></i> Wikipedia</a>{% endif %}
         </div>
+        {% if is_admin %}
         <div>
           <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal"><i class="bi bi-pencil"></i> Edit</button>
           <form method="POST" action="{{ url_for('player_delete', pid=player.id) }}" style="display:inline;" onsubmit="return confirm('Delete {{ player.givenname }} {{ player.familyname }}?')">
             <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
           </form>
         </div>
+        {% endif %}
       </div>
     </div>
   </div>

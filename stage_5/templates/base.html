@@ -35,6 +35,14 @@
           </li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('queries') }}"><i class="bi bi-search"></i> Queries</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('procedures') }}"><i class="bi bi-gear-fill"></i> Procedures</a></li>
+          <li class="nav-item ms-2">
+            {% if is_admin %}
+            <span class="nav-link d-inline"><span class="badge bg-success"><i class="bi bi-shield-lock-fill"></i> Admin</span></span>
+            <a class="nav-link d-inline" href="{{ url_for('admin_logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            {% else %}
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#adminLoginModal"><i class="bi bi-shield-lock"></i> Admin</a>
+            {% endif %}
+          </li>
         </ul>
       </div>
     </div>
@@ -55,6 +63,29 @@
   </div>
 
   {% block content %}{% endblock %}
+
+  <div class="modal fade" id="adminLoginModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin_login') }}">
+          <div class="modal-header" style="background: #16213e; color: white;">
+            <h6 class="modal-title"><i class="bi bi-shield-lock-fill"></i> Admin Login</h6>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Admin Code</label>
+              <input name="code" type="password" class="form-control" required autofocus>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-accent"><i class="bi bi-unlock-fill"></i> Login</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer text-center">
     <div class="container">

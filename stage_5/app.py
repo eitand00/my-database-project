@@ -1,9 +1,29 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from db_connection import execute_query, execute_procedure_call
 import os
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+ADMIN_CODE = os.environ.get("ADMIN_CODE", "admin123")
+
+
+@app.context_processor
+def inject_admin():
+    return {"is_admin": session.get("is_admin", False)}
+
+
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("is_admin"):
+            flash("Admin access required.", "error")
+            return redirect(url_for("index"))
+        return f(*args, **kwargs)
+    return decorated
 
 
 @app.route("/")
@@ -30,17 +50,21 @@ def index():
 
 @app.route("/teams")
 def teams():
-    _, rows = execute_query("""
+    q = request.args.get("q", "")
+    where = "WHERE t.CountryName ILIKE %s" if q else ""
+    params = [f"%{q}%"] if q else []
+    _, rows = execute_query(f"""
         SELECT t.TeamCode, t.CountryName, t.ConfederationName,
                COUNT(DISTINCT p.ID) AS PlayerCount,
                COUNT(DISTINCT m.MatchID) AS MatchCount
         FROM TEAM t
         LEFT JOIN PLAYER p ON t.TeamCode = p.TeamCode
         LEFT JOIN MATCH m ON t.TeamCode IN (m.HomeTeamCode, m.GuestTeamCode)
+        {where}
         GROUP BY t.TeamCode, t.CountryName, t.ConfederationName
         ORDER BY t.CountryName
-    """)
-    return render_template("teams.html", teams=rows)
+    """, params)
+    return render_template("teams.html", teams=rows, q=q)
 
 
 @app.route("/teams/<code>")
@@ -73,6 +97,7 @@ def team_detail(code):
 
 
 @app.route("/teams/<code>/edit", methods=["GET", "POST"])
+@admin_required
 def team_edit(code):
     if request.method == "POST":
         country = request.form.get("country")
@@ -94,6 +119,7 @@ def team_edit(code):
 
 
 @app.route("/teams/add", methods=["GET", "POST"])
+@admin_required
 def team_add():
     if request.method == "POST":
         code = request.form.get("code")
@@ -114,6 +140,7 @@ def team_add():
 
 
 @app.route("/teams/<code>/delete", methods=["POST"])
+@admin_required
 def team_delete(code):
     try:
         execute_query("DELETE FROM TEAM WHERE TeamCode = %s", [code], fetch=False)
@@ -125,19 +152,23 @@ def team_delete(code):
 
 @app.route("/players")
 def players():
-    _, rows = execute_query("""
+    q = request.args.get("q", "")
+    where = "WHERE (per.GivenName ILIKE %s OR per.FamilyName ILIKE %s)" if q else ""
+    params = [f"%{q}%", f"%{q}%"] if q else []
+    _, rows = execute_query(f"""
         SELECT p.ID, per.GivenName, per.FamilyName, p.DateOfBirth,
                t.CountryName AS Team, COUNT(me.MatchEventID) AS Events
         FROM PLAYER p
         JOIN PERSON per ON p.ID = per.ID
         JOIN TEAM t ON p.TeamCode = t.TeamCode
         LEFT JOIN MATCH_EVENT me ON p.ID = me.ID
+        {where}
         GROUP BY p.ID, per.GivenName, per.FamilyName, p.DateOfBirth, t.CountryName
         ORDER BY per.FamilyName
         LIMIT 200
-    """)
+    """, params)
     _, teams = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
-    return render_template("players.html", players=rows, teams=teams)
+    return render_template("players.html", players=rows, teams=teams, q=q)
 
 
 @app.route("/players/<pid>")
@@ -180,6 +211,7 @@ def player_detail(pid):
 
 
 @app.route("/players/<pid>/edit", methods=["POST"])
+@admin_required
 def player_edit(pid):
     dob = request.form.get("dateofbirth")
     team_code = request.form.get("team_code")
@@ -198,6 +230,7 @@ def player_edit(pid):
 
 
 @app.route("/players/add", methods=["POST"])
+@admin_required
 def player_add():
     pid = request.form.get("pid")
     given = request.form.get("given_name")
@@ -221,6 +254,7 @@ def player_add():
 
 
 @app.route("/players/<pid>/delete", methods=["POST"])
+@admin_required
 def player_delete(pid):
     try:
         execute_query("DELETE FROM MATCH_EVENT WHERE ID = %s", [pid], fetch=False)
@@ -235,7 +269,10 @@ def player_delete(pid):
 
 @app.route("/matches")
 def matches():
-    _, rows = execute_query("""
+    tournament = request.args.get("tournament", "")
+    where = "WHERE m.Tournament = %s" if tournament else ""
+    params = [tournament] if tournament else []
+    _, rows = execute_query(f"""
         SELECT m.MatchID, m.MatchDate, m.Stage, m.Tournament,
                ht.CountryName AS HomeTeam, gt.CountryName AS GuestTeam,
                s.Name AS Stadium,
@@ -244,10 +281,12 @@ def matches():
         JOIN TEAM ht ON m.HomeTeamCode = ht.TeamCode
         JOIN TEAM gt ON m.GuestTeamCode = gt.TeamCode
         JOIN STADIUM s ON m.StadiumID = s.StadiumID
+        {where}
         ORDER BY m.MatchDate DESC
         LIMIT 200
-    """)
-    return render_template("matches.html", matches=rows)
+    """, params)
+    _, tournaments = execute_query("SELECT DISTINCT Tournament FROM MATCH ORDER BY Tournament")
+    return render_template("matches.html", matches=rows, tournaments=tournaments, selected_tournament=tournament)
 
 
 @app.route("/matches/<mid>")
@@ -291,6 +330,7 @@ def match_detail(mid):
 
 
 @app.route("/matches/add", methods=["GET", "POST"])
+@admin_required
 def match_add():
     if request.method == "POST":
         mid = request.form.get("matchid")
@@ -322,6 +362,7 @@ def match_add():
 
 
 @app.route("/matches/<mid>/edit", methods=["GET", "POST"])
+@admin_required
 def match_edit(mid):
     if request.method == "POST":
         mdate = request.form.get("matchdate")
@@ -357,6 +398,7 @@ def match_edit(mid):
 
 
 @app.route("/matches/<mid>/delete", methods=["POST"])
+@admin_required
 def match_delete(mid):
     try:
         execute_query("DELETE FROM MATCH_EVENT WHERE MatchID = %s", [mid], fetch=False)
@@ -370,17 +412,22 @@ def match_delete(mid):
 
 @app.route("/stadiums")
 def stadiums():
-    _, rows = execute_query("""
+    q = request.args.get("q", "")
+    where = "WHERE s.Name ILIKE %s" if q else ""
+    params = [f"%{q}%"] if q else []
+    _, rows = execute_query(f"""
         SELECT s.StadiumID, s.Name, s.City, s.Capacity, s.Country,
                COUNT(DISTINCT m.MatchID) AS MatchesHosted
         FROM STADIUM s LEFT JOIN MATCH m ON s.StadiumID = m.StadiumID
+        {where}
         GROUP BY s.StadiumID, s.Name, s.City, s.Capacity, s.Country
         ORDER BY s.Capacity DESC
-    """)
-    return render_template("stadiums.html", stadiums=rows)
+    """, params)
+    return render_template("stadiums.html", stadiums=rows, q=q)
 
 
 @app.route("/stadiums/add", methods=["POST"])
+@admin_required
 def stadium_add():
     sid = request.form.get("sid")
     name = request.form.get("name")
@@ -400,6 +447,7 @@ def stadium_add():
 
 
 @app.route("/stadiums/<sid>/edit", methods=["POST"])
+@admin_required
 def stadium_edit(sid):
     name = request.form.get("name")
     city = request.form.get("city")
@@ -418,6 +466,7 @@ def stadium_edit(sid):
 
 
 @app.route("/stadiums/<sid>/delete", methods=["POST"])
+@admin_required
 def stadium_delete(sid):
     try:
         execute_query("DELETE FROM STADIUM WHERE StadiumID = %s", [sid], fetch=False)
@@ -429,20 +478,25 @@ def stadium_delete(sid):
 
 @app.route("/referees")
 def referees():
-    _, rows = execute_query("""
+    q = request.args.get("q", "")
+    where = "WHERE (per.GivenName ILIKE %s OR per.FamilyName ILIKE %s)" if q else ""
+    params = [f"%{q}%", f"%{q}%"] if q else []
+    _, rows = execute_query(f"""
         SELECT r.ID, per.GivenName || ' ' || per.FamilyName AS FullName,
                r.Country, r.ConfederationName,
                COUNT(DISTINCT m.MatchID) AS MatchesOfficiated
         FROM REFEREE r
         JOIN PERSON per ON r.ID = per.ID
         LEFT JOIN MATCH m ON r.ID = m.RefereeID
+        {where}
         GROUP BY r.ID, per.GivenName, per.FamilyName, r.Country, r.ConfederationName
         ORDER BY per.FamilyName
-    """)
-    return render_template("referees.html", referees=rows)
+    """, params)
+    return render_template("referees.html", referees=rows, q=q)
 
 
 @app.route("/referees/add", methods=["POST"])
+@admin_required
 def referee_add():
     rid = request.form.get("rid")
     country = request.form.get("country")
@@ -463,6 +517,7 @@ def referee_add():
 
 
 @app.route("/referees/<rid>/edit", methods=["POST"])
+@admin_required
 def referee_edit(rid):
     country = request.form.get("country")
     conf_code = request.form.get("conf_code")
@@ -481,6 +536,7 @@ def referee_edit(rid):
 
 
 @app.route("/referees/<rid>/delete", methods=["POST"])
+@admin_required
 def referee_delete(rid):
     try:
         execute_query("DELETE FROM REFEREE WHERE ID = %s", [rid], fetch=False)
@@ -493,7 +549,10 @@ def referee_delete(rid):
 
 @app.route("/events")
 def events():
-    _, rows = execute_query("""
+    q = request.args.get("q", "")
+    where = "WHERE (per.GivenName ILIKE %s OR per.FamilyName ILIKE %s)" if q else ""
+    params = [f"%{q}%", f"%{q}%"] if q else []
+    _, rows = execute_query(f"""
         SELECT me.MatchEventID, me.Minute, me.EventType,
                ht.CountryName || ' vs ' || gt.CountryName AS MatchName,
                per.GivenName || ' ' || per.FamilyName AS PlayerName
@@ -503,13 +562,15 @@ def events():
         JOIN TEAM gt ON m.GuestTeamCode = gt.TeamCode
         JOIN PLAYER pl ON me.ID = pl.ID
         JOIN PERSON per ON pl.ID = per.ID
+        {where}
         ORDER BY me.MatchEventID
         LIMIT 200
-    """)
-    return render_template("events.html", events=rows)
+    """, params)
+    return render_template("events.html", events=rows, q=q)
 
 
 @app.route("/events/add", methods=["POST"])
+@admin_required
 def event_add():
     eid = request.form.get("eid")
     minute = request.form.get("minute")
@@ -528,6 +589,7 @@ def event_add():
 
 
 @app.route("/events/<eid>/delete", methods=["POST"])
+@admin_required
 def event_delete(eid):
     try:
         execute_query("DELETE FROM MATCH_EVENT WHERE MatchEventID = %s", [eid], fetch=False)
@@ -568,6 +630,24 @@ def api_execute():
 @app.route("/procedures")
 def procedures():
     return render_template("procedures.html")
+
+
+@app.route("/admin/login", methods=["POST"])
+def admin_login():
+    code = request.form.get("code", "")
+    if code == ADMIN_CODE:
+        session["is_admin"] = True
+        flash("Logged in as admin.", "success")
+    else:
+        flash("Invalid admin code.", "error")
+    return redirect(request.referrer or url_for("index"))
+
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("is_admin", None)
+    flash("Logged out.", "success")
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
