@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Match {{ match.matchid }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('matches') }}">Matches</a></li>
+      <li class="breadcrumb-item active">{{ match.matchid }}</li>
+    </ol>
+  </nav>
+
+  <div class="card mb-4">
+    <div class="card-body text-center">
+      <h5 class="text-muted mb-2">{{ match.tournament }} - {{ match.stage }}</h5>
+      <h3 style="color: #16213e; font-weight: 800; font-size: 2rem;">
+        <a href="{{ url_for('team_detail', code=match.hometeamcode) }}" class="text-decoration-none">{{ match.hometeam }}</a>
+        <span style="color: #e94560;"> vs </span>
+        <a href="{{ url_for('team_detail', code=match.guestteamcode) }}" class="text-decoration-none">{{ match.guestteam }}</a>
+      </h3>
+      <p class="text-muted">
+        <i class="bi bi-calendar"></i> {{ match.matchdate }}
+        {% if match.matchtime %} | <i class="bi bi-clock"></i> {{ match.matchtime }}{% endif %}
+        | <i class="bi bi-building"></i> {{ match.stadiumname }}
+        | <i class="bi bi-gavel"></i> {{ match.refereename }}
+      </p>
+      <div class="mt-3">
+        <a href="{{ url_for('match_edit', mid=match.matchid) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
+        <form method="POST" action="{{ url_for('match_delete', mid=match.matchid) }}" style="display:inline;" onsubmit="return confirm('Delete this match?')">
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-7 mb-4">
+      <div class="detail-section">
+        <h5><i class="bi bi-lightning-fill"></i> Match Events ({{ events|length }})</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>#</th><th>Minute</th><th>Event</th><th>Player</th></tr></thead>
+            <tbody>
+              {% for e in events %}
+              <tr>
+                <td>{{ e[0] }}</td>
+                <td><strong>{{ e[1] }}'</strong></td>
+                <td>
+                  {% if e[2] == 'Goal' %}<span class="badge goal-badge"><i class="bi bi-soccer-ball"></i> Goal</span>
+                  {% elif 'Yellow' in e[2] %}<span class="badge yellow-badge text-dark"><i class="bi bi-square-fill"></i> Yellow Card</span>
+                  {% elif 'Red' in e[2] %}<span class="badge red-badge"><i class="bi bi-square-fill"></i> Red Card</span>
+                  {% elif 'substitution' in e[2]|lower %}<span class="badge sub-badge"><i class="bi bi-arrow-left-right"></i> Sub</span>
+                  {% else %}<span class="badge bg-secondary">{{ e[2] }}</span>{% endif %}
+                </td>
+                <td>{{ e[3] }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-muted">No events recorded for this match.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5 mb-4">
+      <div class="detail-section">
+        <h5><i class="bi bi-clipboard-data"></i> Player Stats ({{ stats|length }})</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>Player</th><th>Position</th><th>Shirt #</th></tr></thead>
+            <tbody>
+              {% for s in stats %}
+              <tr>
+                <td>{{ s[0] }}</td>
+                <td>{{ s[1] }}</td>
+                <td><span class="badge bg-dark">{{ s[2] }}</span></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="text-muted">No player stats recorded.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

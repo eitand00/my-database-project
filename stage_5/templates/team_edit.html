@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if team else 'Add' }} Team{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('teams') }}">Teams</a></li>
+      <li class="breadcrumb-item active">{{ 'Edit' if team else 'Add' }} Team</li>
+    </ol>
+  </nav>
+
+  <div class="card">
+    <div class="card-header" style="background: #16213e; color: white;">
+      <h5 class="mb-0"><i class="bi bi-{{ 'pencil' if team else 'plus-circle' }}"></i> {{ 'Edit' if team else 'Add' }} Team</h5>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('team_edit', code=team.teamcode) if team else url_for('team_add') }}">
+        {% if not team %}
+        <div class="mb-3">
+          <label class="form-label">Team Code *</label>
+          <input name="code" class="form-control" required>
+        </div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label">Country Name *</label>
+          <input name="country" class="form-control" value="{{ team.countryname if team else '' }}" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Confederation Name *</label>
+          <input name="conf_name" class="form-control" value="{{ team.confederationname if team else '' }}" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Confederation Code</label>
+          <input name="conf_code" class="form-control" value="{{ team.confederationcode if team else '' }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Wikipedia Page</label>
+          <input name="wiki" class="form-control" value="{{ team.wikipediapage if team else '' }}">
+        </div>
+        <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Save</button>
+        <a href="{{ url_for('teams') }}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

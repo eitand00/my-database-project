@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Matches{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 style="color: #16213e; font-weight: 700;"><i class="bi bi-calendar-event-fill" style="color: #e94560;"></i> Matches</h3>
+    <a href="{{ url_for('match_add') }}" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Add Match</a>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr><th>ID</th><th>Date</th><th>Stage</th><th>Tournament</th><th>Home</th><th>Guest</th><th>Stadium</th><th class="text-center">Goals</th><th class="text-center">Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for m in matches %}
+          <tr>
+            <td><span class="badge bg-secondary">{{ m[0] }}</span></td>
+            <td>{{ m[1] }}</td>
+            <td>{{ m[2] }}</td>
+            <td><span class="badge bg-dark">{{ m[3] }}</span></td>
+            <td class="fw-bold">{{ m[4] }}</td>
+            <td class="fw-bold">{{ m[5] }}</td>
+            <td>{{ m[6] }}</td>
+            <td class="text-center"><span class="badge rounded-pill {% if m[7] > 3 %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ m[7] }}</span></td>
+            <td class="text-center">
+              <a href="{{ url_for('match_detail', mid=m[0]) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+              <a href="{{ url_for('match_edit', mid=m[0]) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+              <form method="POST" action="{{ url_for('match_delete', mid=m[0]) }}" style="display:inline;" onsubmit="return confirm('Delete match {{ m[0] }}?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9" class="text-center text-muted py-4">No matches found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

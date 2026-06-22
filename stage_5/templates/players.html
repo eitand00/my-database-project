@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Players{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 style="color: #16213e; font-weight: 700;"><i class="bi bi-person-fill" style="color: #28a745;"></i> Players</h3>
+    <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#addModal">
+      <i class="bi bi-plus-lg"></i> Add Player
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr><th>ID</th><th>Given Name</th><th>Family Name</th><th>DOB</th><th>Team</th><th>Events</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for p in players %}
+          <tr>
+            <td><span class="badge bg-secondary">{{ p[0] }}</span></td>
+            <td>{{ p[1] }}</td>
+            <td><a href="{{ url_for('player_detail', pid=p[0]) }}" class="fw-bold text-decoration-none">{{ p[2] }}</a></td>
+            <td>{{ p[3] or 'N/A' }}</td>
+            <td>{{ p[4] }}</td>
+            <td class="text-center">{{ p[5] }}</td>
+            <td>
+              <a href="{{ url_for('player_detail', pid=p[0]) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+              <form method="POST" action="{{ url_for('player_delete', pid=p[0]) }}" style="display:inline;" onsubmit="return confirm('Delete {{ p[1] }} {{ p[2] }}?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No players found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('player_add') }}">
+        <div class="modal-header" style="background: #16213e; color: white;">
+          <h5 class="modal-title"><i class="bi bi-person-plus"></i> Add Player</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3"><label class="form-label">Player ID *</label><input name="pid" class="form-control" required></div>
+          <div class="row">
+            <div class="col-md-6 mb-3"><label class="form-label">Given Name *</label><input name="given_name" class="form-control" required></div>
+            <div class="col-md-6 mb-3"><label class="form-label">Family Name *</label><input name="family_name" class="form-control" required></div>
+          </div>
+          <div class="mb-3"><label class="form-label">Date of Birth</label><input name="dateofbirth" class="form-control" placeholder="YYYY-MM-DD"></div>
+          <div class="mb-3"><label class="form-label">Team</label>
+            <select name="team_code" class="form-select">
+              <option value="">-- Select --</option>
+              {% for t in teams %}<option value="{{ t[0] }}">{{ t[1] }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Wikipedia Page</label><input name="wiki" class="form-control"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

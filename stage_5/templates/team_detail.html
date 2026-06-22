@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ team.countryname }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('teams') }}">Teams</a></li>
+      <li class="breadcrumb-item active">{{ team.countryname }}</li>
+    </ol>
+  </nav>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h3 style="color: #16213e; font-weight: 700;"><i class="bi bi-flag-fill" style="color: #e94560;"></i> {{ team.countryname }}</h3>
+          <p class="text-muted mb-1">Code: <strong>{{ team.teamcode }}</strong> | Confederation: {{ team.confederationname }} ({{ team.confederationcode }})</p>
+          {% if team.wikipediapage %}<a href="{{ team.wikipediapage }}" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-box-arrow-up-right"></i> Wikipedia</a>{% endif %}
+        </div>
+        <div>
+          <a href="{{ url_for('team_edit', code=team.teamcode) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
+          <form method="POST" action="{{ url_for('team_delete', code=team.teamcode) }}" style="display:inline;" onsubmit="return confirm('Delete {{ team.countryname }}?')">
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="detail-section">
+        <h5><i class="bi bi-people-fill"></i> Squad ({{ players|length }})</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>Player</th><th>Date of Birth</th></tr></thead>
+            <tbody>
+              {% for p in players %}
+              <tr>
+                <td><a href="{{ url_for('player_detail', pid=p[0]) }}">{{ p[1] }}</a></td>
+                <td>{{ p[2] or 'N/A' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="2" class="text-muted">No players in this team.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="detail-section">
+        <h5><i class="bi bi-calendar-event"></i> Recent Matches ({{ matches|length }})</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>Date</th><th>Stage</th><th>Home</th><th>Away</th></tr></thead>
+            <tbody>
+              {% for m in matches %}
+              <tr>
+                <td>{{ m[1] }}</td>
+                <td>{{ m[2] }}</td>
+                <td><strong>{{ m[3] }}</strong></td>
+                <td><strong>{{ m[4] }}</strong></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-muted">No matches found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

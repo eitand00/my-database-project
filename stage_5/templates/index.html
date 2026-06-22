@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}World Cup Database Manager{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+  <div class="container text-center">
+    <h1><i class="bi bi-trophy-fill"></i> World Cup Statistics</h1>
+    <p>Comprehensive database system for analyzing FIFA World Cup tournaments</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon"><i class="bi bi-calendar-event-fill" style="color: #e94560;"></i></div>
+          <div class="stat-number">{{ match_count }}</div>
+          <div class="stat-label">Matches</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon"><i class="bi bi-people-fill" style="color: #0f3460;"></i></div>
+          <div class="stat-number">{{ team_count }}</div>
+          <div class="stat-label">Teams</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon"><i class="bi bi-person-fill" style="color: #28a745;"></i></div>
+          <div class="stat-number">{{ player_count }}</div>
+          <div class="stat-label">Players</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon"><i class="bi bi-building" style="color: #ffc107;"></i></div>
+          <div class="stat-number">{{ stadium_count }}</div>
+          <div class="stat-label">Stadiums</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4 class="mb-3" style="color: #16213e; font-weight: 700;">Quick Actions</h4>
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <a href="{{ url_for('matches') }}" class="quick-action-card card">
+        <div class="card-body d-flex align-items-center">
+          <i class="bi bi-calendar-event-fill fs-1 me-3" style="color: #e94560;"></i>
+          <div>
+            <h6 class="mb-1">Browse Matches</h6>
+            <small class="text-muted">View all World Cup matches with details</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="{{ url_for('teams') }}" class="quick-action-card card">
+        <div class="card-body d-flex align-items-center">
+          <i class="bi bi-people-fill fs-1 me-3" style="color: #0f3460;"></i>
+          <div>
+            <h6 class="mb-1">National Teams</h6>
+            <small class="text-muted">Explore teams and their squads</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="{{ url_for('players') }}" class="quick-action-card card">
+        <div class="card-body d-flex align-items-center">
+          <i class="bi bi-person-fill fs-1 me-3" style="color: #28a745;"></i>
+          <div>
+            <h6 class="mb-1">Player Stats</h6>
+            <small class="text-muted">Search players and their match events</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="{{ url_for('stadiums') }}" class="quick-action-card card">
+        <div class="card-body d-flex align-items-center">
+          <i class="bi bi-building fs-1 me-3" style="color: #ffc107;"></i>
+          <div>
+            <h6 class="mb-1">Stadiums</h6>
+            <small class="text-muted">View stadium capacities and usage</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="{{ url_for('queries') }}" class="quick-action-card card">
+        <div class="card-body d-flex align-items-center">
+          <i class="bi bi-search fs-1 me-3" style="color: #6f42c1;"></i>
+          <div>
+            <h6 class="mb-1">SQL Queries</h6>
+            <small class="text-muted">Run advanced analytical queries</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="{{ url_for('procedures') }}" class="quick-action-card card">
+        <div class="card-body d-flex align-items-center">
+          <i class="bi bi-gear-fill fs-1 me-3" style="color: #e94560;"></i>
+          <div>
+            <h6 class="mb-1">Procedures</h6>
+            <small class="text-muted">Execute stored procedures and functions</small>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background: #16213e; color: white;">
+      <i class="bi bi-info-circle-fill"></i> About This System
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h6 style="color: #16213e; font-weight: 700;"><i class="bi bi-database"></i> Database Schema</h6>
+          <ul class="list-unstyled">
+            <li><strong>PERSON</strong> - Base entity for players & referees</li>
+            <li><strong>TEAM</strong> - National teams & confederations</li>
+            <li><strong>PLAYER</strong> - Player details (inherits PERSON)</li>
+            <li><strong>REFEREE</strong> - Match officials (inherits PERSON)</li>
+            <li><strong>STADIUM</strong> - Venue information</li>
+            <li><strong>MATCH</strong> - Match fixtures & results</li>
+            <li><strong>MATCH_EVENT</strong> - Goals, cards, substitutions</li>
+            <li><strong>PLAYER_MATCH_STATS</strong> - Player positions & shirt numbers</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h6 style="color: #16213e; font-weight: 700;"><i class="bi bi-graph-up-arrow"></i> Features</h6>
+          <ul class="list-unstyled">
+            <li><i class="bi bi-check-circle text-success"></i> CRUD operations on all tables</li>
+            <li><i class="bi bi-check-circle text-success"></i> Foreign keys shown as names</li>
+            <li><i class="bi bi-check-circle text-success"></i> Advanced SQL queries (Stage 2)</li>
+            <li><i class="bi bi-check-circle text-success"></i> Stored procedures & functions (Stage 4)</li>
+            <li><i class="bi bi-check-circle text-success"></i> Integration with betting system</li>
+            <li><i class="bi bi-check-circle text-success"></i> <strong>{{ event_count }}</strong> match events tracked</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
