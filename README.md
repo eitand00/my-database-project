@@ -11,7 +11,10 @@ This project is a comprehensive database system focused on **analyzing statistic
 
 ## Project Structure
 * **Stage 1:** Database initialization, system characterization (AI Studio), ERD/DSD design, massive data insertion (3 methods), and backup/restore procedures.
-* **Stage 2:** Advanced SQL queries (JOINs, Window Functions, Grouping), Views, and data analysis. *(To be added)*
+* **Stage 2:** Advanced SQL queries (JOINs, Window Functions, Grouping), Views, and data analysis.
+* **Stage 3:** System integration with betting database, reverse engineering, super-type mapping, data migration, and views.
+* **Stage 4:** PL/pgSQL programming - functions, procedures, triggers, cursors, and main programs.
+* **Stage 5:** Web-based graphical interface (Flask + Bootstrap 5) for database management: CRUD operations, query execution, and procedure/function execution.
 
 ## Technologies Used
 * **Database:** PostgreSQL (Dockerized)
