@@ -70,6 +70,29 @@ services:
     profiles:
       - import
 
+  # -------------------------
+  # Phase E GUI Application
+  # -------------------------
+  gui:
+    build:
+      context: ./DBProject/123456789_987654321/שלב ה
+    container_name: WorldCup_GUI
+    restart: always
+    environment:
+      DB_USER_SECRET: ${DB_USER_SECRET}
+      DB_PASSWORD_SECRET: ${DB_PASSWORD_SECRET}
+      DB_NAME_SECRET: ${DB_NAME_SECRET}
+      DB_HOST: db
+    volumes:
+      - ./DBProject/123456789_987654321/שלב ה:/app
+    ports:
+      - "8501:8501"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - zoo_network
+
 # -------------------------
 # Volumes
 # ------------------------

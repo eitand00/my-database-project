@@ -55,3 +55,23 @@ Notes:
 - The database container only mounts `./stage_1` at `/stage_1`, which is the path used in the schema command above.
 - The importer mounts `./stage_1` and `./dataset` so it can read the ETL script and CSV files from the host.
 
+## Stage E - GUI Application
+A Python-based graphical user interface (GUI) was developed using **Streamlit** to provide a user-friendly way to interact with the database.
+
+### Features:
+* **Dashboard & Navigation:** Easy access to all modules via a sidebar.
+* **CRUD Operations:** Manage `TEAM`, `PLAYER`, `STADIUM`, and other tables with joined meaningful names (e.g., displaying country names instead of IDs). Form updates automatically load existing data.
+* **Queries Execution:** Run analytical queries from Stage 2 directly from the app.
+* **Betting System (PL/pgSQL):** Interact with the betting procedures and functions created in Stage 4 (e.g., placing a bet, calculating payouts).
+
+### How to Run the GUI:
+The application has been containerized and integrated into the main Docker Compose setup.
+To run the GUI alongside the database:
+
+```bash
+docker compose up -d db gui
+```
+
+Once started, open your web browser and navigate to `http://localhost:8501`.
+
+*(Screenshots of the application can be found in the `images` folder inside `DBProject/123456789_987654321/שלב ה`).*
