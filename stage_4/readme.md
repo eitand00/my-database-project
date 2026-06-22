@@ -16,7 +16,7 @@
 ### פונקציה 1: Calculate_Potential_Payout
 * תיאור מילולי: הפונקציה מקבלת מזהה הימור (p_bet_id) ושולפת את נתוני ההימור ונתוני יחסי הזכייה של המשחק (תוך שימוש ב-Implicit Cursor עם מצב STRICT ורשומות דינמיות מתאימות לטבלאות). באמצעות הסתעפויות, הפונקציה בודקת מהי התוצאה החזויה ומחשבת את סכום הזכייה הפוטנציאלי במקרה של ניצחון. במידה וההימור לא נמצא או חסר נתון, נזרקת חריגה המטופלת בבלוק ה-EXCEPTION.
 * הקוד:
-
+```sql
 CREATE OR REPLACE FUNCTION Calculate_Potential_Payout(p_bet_id INT)
 RETURNS NUMERIC AS $$
 DECLARE
@@ -52,6 +52,7 @@ EXCEPTION
         RETURN -1;
 END;
 $$ LANGUAGE plpgsql;
+```
 
 * הוכחת תקינות:
 * <img width="1437" height="787" alt="image" src="https://github.com/user-attachments/assets/ca27e52a-72f4-4f14-850e-908cdeee7e75" />
@@ -61,7 +62,7 @@ $$ LANGUAGE plpgsql;
 ### פונקציה 2: Get_Match_Bettors_RefCursor
 * תיאור מילולי: הפונקציה מקבלת מזהה משחק (p_global_match_id) ומחזירה מצביע דינמי (Ref Cursor) המכיל את כל ההימורים שבוצעו על משחק זה. הפונקציה מבצעת JOIN בין טבלת ההימורים לטבלת המשתמשים כדי לאסוף את שם המהמר, סכום ההימור, הניחוש והסטטוס.
 * הקוד:
-
+```sql
 CREATE OR REPLACE FUNCTION Get_Match_Bettors_RefCursor(p_global_match_id INT)
 RETURNS refcursor AS $$
 DECLARE
@@ -79,6 +80,7 @@ BEGIN
     RETURN v_ref_cur;
 END;
 $$ LANGUAGE plpgsql;
+```
 
 * הוכחת תקינות:
 <img width="1467" height="803" alt="image" src="https://github.com/user-attachments/assets/10348083-d9a5-4c3a-9903-82be973c47a0" />
@@ -90,7 +92,7 @@ $$ LANGUAGE plpgsql;
 ### פרוצדורה 1: Mass_Update_Stage_Odds
 * תיאור מילולי: פרוצדורה המבצעת עדכון המוני ליחסי הזכייה עבור כל המשחקים בשלב מסוים במונדיאל. היא מקבלת את שם השלב ואת מקדם ההכפלה ליחסים. הפרוצדורה עושה שימוש ב-Explicit Cursor ששולף את כל המשחקים הרלוונטיים מהצומת הגלובלי, רצה עליהם בלולאת LOOP, ומעדכנת את טבלת ה-odds באמצעות פקודת UPDATE. במידה ומתרחשת שגיאה, מופעל חריג עם ROLLBACK.
 * הקוד:
-
+```sql
 CREATE OR REPLACE PROCEDURE Mass_Update_Stage_Odds(p_stage VARCHAR, p_boost_factor NUMERIC)
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -136,6 +138,7 @@ EXCEPTION
         ROLLBACK;
 END;
 $$;
+```
 
 * הוכחת תקינות:
 <img width="1253" height="757" alt="image" src="https://github.com/user-attachments/assets/ae1459a2-9a9b-4000-a671-b6f97868b0e2" />
@@ -150,7 +153,7 @@ $$;
 ### פרוצדורה 2: create_bet
 * תיאור מילולי: פרוצדורה ליצירת הימור חדש. היא מקבלת מזהה משתמש, משחק, סכום וניחוש. מוודאת תחילה שהניחוש חוקי ושהמשחק קיים. לאחר מכן היא מבצעת 2 פקודות DML: מורידה מהיתרה של המשתמש את סכום ההימור (עדכון ה-Balance) ורושמת את ההימור החדש בטבלת bets (ביצוע INSERT). כוללת טיפול שגיאות ב-Exception ששומר על אמינות הנתונים ומבטל את כל העסקה במקרה של תקלה.
 * הקוד:
-
+```sql
 CREATE OR REPLACE PROCEDURE create_bet(
     p_user_id INT,
     p_global_match_id INT,
@@ -208,7 +211,7 @@ EXCEPTION
         ROLLBACK;
 END;
 $$;
-
+```
 * הוכחת תקינות:
 <img width="1292" height="711" alt="image" src="https://github.com/user-attachments/assets/5b44b43b-8653-4560-95a3-f8bc5da9a4c0" />
 
@@ -219,7 +222,7 @@ $$;
 ### טריגר 1: מניעת יתרה שלילית (בזמן UPDATE)
 * תיאור מילולי: טריגר מסוג BEFORE UPDATE המופעל על טבלת המשתמשים. הטריגר בודק האם היתרה החדשה לאחר הפעולה (NEW.balance) קטנה מאפס. במידה וכן, הוא חוסם את העדכון וזורק שגיאה שעוצרת את התהליך (חובה כדי למנוע מינוס בחשבונות הלקוחות בעקבות הימורים).
 * הקוד:
-
+```sql
 -- א. פונקציית הטריגר
 CREATE OR REPLACE FUNCTION trg_func_prevent_negative_balance()
 RETURNS TRIGGER AS $$
@@ -239,7 +242,7 @@ CREATE TRIGGER trg_prevent_negative_balance
 BEFORE UPDATE OF balance ON users
 FOR EACH ROW
 EXECUTE FUNCTION trg_func_prevent_negative_balance();
-
+```
 * הוכחת תקינות:
 <img width="1190" height="707" alt="image" src="https://github.com/user-attachments/assets/463a5b8e-da18-425f-aea5-10644a7526e0" />
 
@@ -247,7 +250,7 @@ EXECUTE FUNCTION trg_func_prevent_negative_balance();
 ### טריגר 2: תשלום אוטומטי בזכייה בהימור (בזמן UPDATE)
 * תיאור מילולי: טריגר מסוג AFTER UPDATE המופעל על טבלת ההימורים. הוא מאזין לשינוי של עמודת הסטטוס. אם הסטטוס משתנה באופן פרטני ל-'Won' (ניצחון), הטריגר שולף את יחס הזכייה המתאים מהמשחק, מכפיל אותו בסכום ההימור, ומבצע באופן עצמאי פקודת UPDATE לעדכון והוספת כספי הזכייה לחשבון המשתמש בטבלת users.
 * הקוד:
-
+```sql
 -- א. פונקציית הטריגר
 CREATE OR REPLACE FUNCTION trg_func_payout_on_win()
 RETURNS TRIGGER AS $$
@@ -283,7 +286,7 @@ CREATE TRIGGER trg_payout_on_win
 AFTER UPDATE OF bet_status ON bets
 FOR EACH ROW
 EXECUTE FUNCTION trg_func_payout_on_win();
-
+```
 * הוכחת תקינות:
 <img width="1451" height="716" alt="image" src="https://github.com/user-attachments/assets/ea31e255-b946-444d-9602-cd4265d2c9ed" />
 
@@ -294,7 +297,7 @@ EXECUTE FUNCTION trg_func_payout_on_win();
 ### תוכנית ראשית 1: ביצוע הימורים וחישוב רווח
 * תיאור מילולי: תוכנית (בלוק אנונימי) המבצעת סימולציה של מהמרים. התוכנית רצה בלולאה 3 פעמים, בוחרת במקריות משתמש מהמערכת ומשחק פעיל עם יחסים. מגרילה סכום ותוצאה, ואז מזמנת את פרוצדורת create_bet כדי לרשום את ההימור. מיד לאחר מכן התוכנית מאתרת את ההימור שזה עתה נוצר, ומזמנת את הפונקציה Calculate_Potential_Payout על מנת להציג במסך את הרווח האפשרי במקרה של זכייה.
 * הקוד:
-
+```sql
 DO $$
 DECLARE
     v_existing_user_id INT;
@@ -328,7 +331,7 @@ BEGIN
     RAISE NOTICE '--- Main Program 1 Completed Successfully ---';
 END;
 $$;
-
+```
 * הוכחת תקינות:
 <img width="1467" height="756" alt="image" src="https://github.com/user-attachments/assets/7cd10b90-52db-4ed0-85a9-006ed2e97d8e" />
 
@@ -338,7 +341,7 @@ $$;
 ### תוכנית ראשית 2: אלגוריתם בוט "חכמת ההמונים"
 * תיאור מילולי: תוכנית מתקדמת המדמה אלגוריתם אוטומטי שמהמר על סמך דעת הרוב. התוכנית מאתרת משחק שיש עליו מספר הימורים במערכת, ומזמנת את הפונקציה Get_Match_Bettors_RefCursor כדי לקבל מצביע לכל אותם ההימורים. התוכנית עוברת על הסמן בלולאה תוך שימוש ב-FETCH, מסכמת כמה כסף הושם על כל אחת מהתוצאות האפשריות במשחק זה, ומסיקה מהו הניחוש הפופולארי ביותר ע"י המשתמשים. בסיום, היא מזמנת את הפרוצדורה create_bet כדי לשים הימור אסטרטגי גדול עבור בוט המערכת על אותה תוצאה נבחרת.
 * הקוד:
-
+```sql
 DO $$
 DECLARE
     v_bot_name VARCHAR := 'Crowd_Wisdom_Bot';
@@ -409,6 +412,7 @@ BEGIN
     RAISE NOTICE '--- Main Program 2 Completed Successfully ---';
 END;
 $$;
+```
 
 * הוכחת תקינות:
 <img width="1467" height="702" alt="image" src="https://github.com/user-attachments/assets/e3948620-e418-48c6-878f-5ea79487f7bc" />
