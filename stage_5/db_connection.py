@@ -24,12 +24,14 @@ def execute_query(query, params=None, fetch=True):
     try:
         with conn.cursor() as cur:
             cur.execute(query, params)
+            notices = [n.strip() for n in conn.notices]
+            conn.notices.clear()
             if fetch and cur.description:
                 columns = [desc[0] for desc in cur.description]
                 rows = cur.fetchall()
-                return columns, rows
+                return columns, rows, notices
             conn.commit()
-            return None, None
+            return None, None, notices
     except Exception as e:
         conn.rollback()
         raise e

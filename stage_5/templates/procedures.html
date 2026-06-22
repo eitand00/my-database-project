@@ -35,6 +35,7 @@
       </div>
     </div>
 
+    {% if is_admin %}
     <div class="col-md-6 mb-4">
       <div class="card h-100">
         <div class="card-header" style="background: #16213e; color: white;">
@@ -45,8 +46,8 @@
           <div class="row">
             <div class="col-md-6 mb-2"><label class="form-label">Stage</label>
               <select id="massStage" class="form-select">
-                <option>Group Stage</option><option>Round of 16</option><option>Quarter-Final</option>
-                <option>Semi-Final</option><option>Third Place</option><option>Final</option>
+                <option>group stage</option><option>round of 16</option><option>quarter-finals</option>
+                <option>semi-finals</option><option>third-place match</option><option>final</option>
               </select>
             </div>
             <div class="col-md-6 mb-2"><label class="form-label">Factor</label><input id="massFactor" class="form-control" value="1.5"></div>
@@ -81,6 +82,33 @@
         </div>
       </div>
     </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header" style="background: #16213e; color: white;">
+          <h6 class="mb-0"><i class="bi bi-cash-stack"></i> Create Bet & Print Payout</h6>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small">Procedure: Places 3 random bets and calculates their potential payout.</p>
+          <button class="btn btn-accent" onclick="runProcedure('printPayout')"><i class="bi bi-play-fill"></i> Execute</button>
+          <div id="printPayoutResult" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header" style="background: #16213e; color: white;">
+          <h6 class="mb-0"><i class="bi bi-people-fill"></i> Wisdom of the Crowds</h6>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small">Procedure: Creates a bot that bets on the most popular prediction.</p>
+          <button class="btn btn-accent" onclick="runProcedure('crowdWisdom')"><i class="bi bi-play-fill"></i> Execute</button>
+          <div id="crowdWisdomResult" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 
   <div class="card">
@@ -98,6 +126,12 @@
 
 {% block scripts %}
 <script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function log(msg, isError = false) {
   const logDiv = document.getElementById('executionLog');
   const entry = document.createElement('div');
@@ -118,7 +152,7 @@ function runFunction(type) {
     params = [];
   } else if (type === 'bettors') {
     const matchId = document.getElementById('bettorsMatchId').value;
-    sql = `SELECT * FROM Get_Match_Bettors_RefCursor(${matchId}) AS (full_name VARCHAR, amount NUMERIC, prediction VARCHAR, status VARCHAR)`;
+    sql = `SELECT * FROM Get_Match_Bettors(${matchId})`;
     params = [];
   }
 
@@ -131,12 +165,18 @@ function runFunction(type) {
   .then(r => r.json())
   .then(data => {
     if (!data.success) {
-      resultDiv.innerHTML = `<span class="text-danger">${data.error}</span>`;
+      resultDiv.innerHTML = '<div class="alert alert-danger py-2 mb-0 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> ' + escapeHtml(data.error) + '</div>';
       log(`Error: ${data.error}`, true);
       return;
     }
+    let html = '';
+    if (data.notices && data.notices.length > 0) {
+      html += '<div class="alert alert-success py-2 mb-0 mt-2 small font-monospace"><i class="bi bi-info-circle-fill"></i> ';
+      html += data.notices.join('<br>');
+      html += '</div>';
+    }
     if (data.rows && data.rows.length > 0) {
-      let html = '<table class="table table-sm table-bordered mt-2 mb-0"><thead><tr>';
+      html += '<table class="table table-sm table-bordered mt-2 mb-0"><thead><tr>';
       data.columns.forEach(c => { html += `<th>${c}</th>`; });
       html += '</tr></thead><tbody>';
       data.rows.forEach(r => {
@@ -145,15 +185,15 @@ function runFunction(type) {
         html += '</tr>';
       });
       html += '</tbody></table>';
-      resultDiv.innerHTML = html;
       log(`Success: ${data.rows.length} rows returned`);
     } else {
-      resultDiv.innerHTML = '<span class="text-success">Executed (no rows).</span>';
+      if (!html) html = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Procedure executed successfully.</span>';
       log('Success: executed');
     }
+    resultDiv.innerHTML = html;
   })
   .catch(err => {
-    resultDiv.innerHTML = `<span class="text-danger">${err.message}</span>`;
+    resultDiv.innerHTML = '<div class="alert alert-danger py-2 mb-0 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> ' + escapeHtml(err.message) + '</div>';
     log(`Error: ${err.message}`, true);
   });
 }
@@ -175,6 +215,12 @@ function runProcedure(type) {
     const pred = document.getElementById('betPrediction').value;
     sql = `CALL create_bet(%s, %s, %s, %s)`;
     params = [uid, mid, amt, pred];
+  } else if (type === 'printPayout') {
+    sql = `CALL create_bet_print_payout()`;
+    params = [];
+  } else if (type === 'crowdWisdom') {
+    sql = `CALL crowd_wisdom()`;
+    params = [];
   }
 
   log(`Running: ${sql} [params: ${params.join(', ')}]`);
@@ -186,15 +232,22 @@ function runProcedure(type) {
   .then(r => r.json())
   .then(data => {
     if (!data.success) {
-      resultDiv.innerHTML = `<span class="text-danger">${data.error}</span>`;
+      resultDiv.innerHTML = '<div class="alert alert-danger py-2 mb-0 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> ' + escapeHtml(data.error) + '</div>';
       log(`Error: ${data.error}`, true);
       return;
     }
-    resultDiv.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Procedure executed successfully.</span>';
+    let html = '';
+    if (data.notices && data.notices.length > 0) {
+      html += '<div class="alert alert-success py-2 mb-0 mt-2 small font-monospace"><i class="bi bi-info-circle-fill"></i> ';
+      html += data.notices.join('<br>');
+      html += '</div>';
+    }
+    if (!html) html = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Procedure executed successfully.</span>';
+    resultDiv.innerHTML = html;
     log('Success: procedure executed');
   })
   .catch(err => {
-    resultDiv.innerHTML = `<span class="text-danger">${err.message}</span>`;
+    resultDiv.innerHTML = '<div class="alert alert-danger py-2 mb-0 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> ' + escapeHtml(err.message) + '</div>';
     log(`Error: ${err.message}`, true);
   });
 }

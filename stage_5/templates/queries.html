@@ -38,6 +38,7 @@
       <i class="bi bi-code-slash"></i> SQL Editor
     </div>
     <div class="card-body">
+      {% if not is_admin %}<div class="alert alert-info py-2 mb-2"><i class="bi bi-info-circle"></i> Regular users can only run SELECT queries.</div>{% endif %}
       <textarea id="sqlInput" class="form-control font-monospace" rows="6" style="background: #1e1e1e; color: #d4d4d4;">SELECT * FROM TEAM LIMIT 10</textarea>
       <button class="btn btn-accent mt-2" onclick="runQuery()"><i class="bi bi-play-fill"></i> Run Query</button>
       <button class="btn btn-secondary mt-2" onclick="clearResults()"><i class="bi bi-x-circle"></i> Clear</button>

@@ -29,11 +29,11 @@ def admin_required(f):
 @app.route("/")
 def index():
     try:
-        _, match_count = execute_query("SELECT COUNT(*) FROM MATCH")
-        _, team_count = execute_query("SELECT COUNT(*) FROM TEAM")
-        _, player_count = execute_query("SELECT COUNT(*) FROM PLAYER")
-        _, stadium_count = execute_query("SELECT COUNT(*) FROM STADIUM")
-        _, event_count = execute_query("SELECT COUNT(*) FROM MATCH_EVENT")
+        _, match_count , _ = execute_query("SELECT COUNT(*) FROM MATCH")
+        _, team_count , _ = execute_query("SELECT COUNT(*) FROM TEAM")
+        _, player_count , _ = execute_query("SELECT COUNT(*) FROM PLAYER")
+        _, stadium_count , _ = execute_query("SELECT COUNT(*) FROM STADIUM")
+        _, event_count , _ = execute_query("SELECT COUNT(*) FROM MATCH_EVENT")
 
         mc = match_count[0][0] if match_count else 0
         tc = team_count[0][0] if team_count else 0
@@ -53,7 +53,7 @@ def teams():
     q = request.args.get("q", "")
     where = "WHERE t.CountryName ILIKE %s" if q else ""
     params = [f"%{q}%"] if q else []
-    _, rows = execute_query(f"""
+    _, rows , _ = execute_query(f"""
         SELECT t.TeamCode, t.CountryName, t.ConfederationName,
                COUNT(DISTINCT p.ID) AS PlayerCount,
                COUNT(DISTINCT m.MatchID) AS MatchCount
@@ -70,20 +70,20 @@ def teams():
 @app.route("/teams/<code>")
 def team_detail(code):
     if request.method == "GET":
-        cols, rows = execute_query("SELECT * FROM TEAM WHERE TeamCode = %s", [code])
+        cols, rows , _ = execute_query("SELECT * FROM TEAM WHERE TeamCode = %s", [code])
         if not rows:
             flash("Team not found.", "error")
             return redirect(url_for("teams"))
         team = dict(zip([c.lower() for c in cols], rows[0]))
 
-        _, players = execute_query("""
+        _, players , _ = execute_query("""
             SELECT p.ID, per.GivenName || ' ' || per.FamilyName AS FullName,
                    p.DateOfBirth
             FROM PLAYER p JOIN PERSON per ON p.ID = per.ID
             WHERE p.TeamCode = %s ORDER BY per.FamilyName
         """, [code])
 
-        _, matches = execute_query("""
+        _, matches , _ = execute_query("""
             SELECT m.MatchID, m.MatchDate, m.Stage,
                    ht.CountryName AS HomeTeam, gt.CountryName AS GuestTeam
             FROM MATCH m
@@ -110,7 +110,7 @@ def team_edit(code):
         )
         flash("Team updated successfully!", "success")
         return redirect(url_for("team_detail", code=code))
-    cols, rows = execute_query("SELECT * FROM TEAM WHERE TeamCode = %s", [code])
+    cols, rows , _ = execute_query("SELECT * FROM TEAM WHERE TeamCode = %s", [code])
     if not rows:
         flash("Team not found.", "error")
         return redirect(url_for("teams"))
@@ -155,7 +155,7 @@ def players():
     q = request.args.get("q", "")
     where = "WHERE (per.GivenName ILIKE %s OR per.FamilyName ILIKE %s)" if q else ""
     params = [f"%{q}%", f"%{q}%"] if q else []
-    _, rows = execute_query(f"""
+    _, rows , _ = execute_query(f"""
         SELECT p.ID, per.GivenName, per.FamilyName, p.DateOfBirth,
                t.CountryName AS Team, COUNT(me.MatchEventID) AS Events
         FROM PLAYER p
@@ -167,13 +167,13 @@ def players():
         ORDER BY per.FamilyName
         LIMIT 200
     """, params)
-    _, teams = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
+    _, teams , _ = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
     return render_template("players.html", players=rows, teams=teams, q=q)
 
 
 @app.route("/players/<pid>")
 def player_detail(pid):
-    cols, rows = execute_query("""
+    cols, rows , _ = execute_query("""
         SELECT p.ID, per.GivenName, per.FamilyName, per.WikipediaPage,
                p.DateOfBirth, t.CountryName AS Team, t.TeamCode
         FROM PLAYER p
@@ -186,7 +186,7 @@ def player_detail(pid):
         return redirect(url_for("players"))
     player = dict(zip([c.lower() for c in cols], rows[0]))
 
-    _, events = execute_query("""
+    _, events , _ = execute_query("""
         SELECT me.MatchEventID, me.Minute, me.EventType,
                m.MatchDate, m.Stage,
                ht.CountryName AS HomeTeam, gt.CountryName AS GuestTeam
@@ -197,7 +197,7 @@ def player_detail(pid):
         WHERE me.ID = %s ORDER BY m.MatchDate DESC
     """, [pid])
 
-    _, stats = execute_query("""
+    _, stats , _ = execute_query("""
         SELECT m.MatchDate, ht.CountryName AS Home, gt.CountryName AS Away,
                pms.Position, pms.ShirtNumber
         FROM PLAYER_MATCH_STATS pms
@@ -272,7 +272,7 @@ def matches():
     tournament = request.args.get("tournament", "")
     where = "WHERE m.Tournament = %s" if tournament else ""
     params = [tournament] if tournament else []
-    _, rows = execute_query(f"""
+    _, rows , _ = execute_query(f"""
         SELECT m.MatchID, m.MatchDate, m.Stage, m.Tournament,
                ht.CountryName AS HomeTeam, gt.CountryName AS GuestTeam,
                s.Name AS Stadium,
@@ -285,13 +285,13 @@ def matches():
         ORDER BY m.MatchDate DESC
         LIMIT 200
     """, params)
-    _, tournaments = execute_query("SELECT DISTINCT Tournament FROM MATCH ORDER BY Tournament")
+    _, tournaments , _ = execute_query("SELECT DISTINCT Tournament FROM MATCH ORDER BY Tournament")
     return render_template("matches.html", matches=rows, tournaments=tournaments, selected_tournament=tournament)
 
 
 @app.route("/matches/<mid>")
 def match_detail(mid):
-    cols, rows = execute_query("""
+    cols, rows , _ = execute_query("""
         SELECT m.*, s.Name AS StadiumName,
                ht.CountryName AS HomeTeam, gt.CountryName AS GuestTeam,
                per.GivenName || ' ' || per.FamilyName AS RefereeName
@@ -308,16 +308,16 @@ def match_detail(mid):
         return redirect(url_for("matches"))
     match = dict(zip([c.lower() for c in cols], rows[0]))
 
-    _, events = execute_query("""
+    _, events , _ = execute_query("""
         SELECT me.MatchEventID, me.Minute, me.EventType,
                per.GivenName || ' ' || per.FamilyName AS PlayerName
         FROM MATCH_EVENT me
         JOIN PLAYER pl ON me.ID = pl.ID
         JOIN PERSON per ON pl.ID = per.ID
-        WHERE me.MatchID = %s ORDER BY me.Minute::int ASC
+        WHERE me.MatchID = %s ORDER BY regexp_replace(me.Minute, '[+''].*$', '')::int ASC
     """, [mid])
 
-    _, stats = execute_query("""
+    _, stats , _ = execute_query("""
         SELECT per.GivenName || ' ' || per.FamilyName AS PlayerName,
                pms.Position, pms.ShirtNumber
         FROM PLAYER_MATCH_STATS pms
@@ -352,9 +352,9 @@ def match_add():
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
 
-    _, teams = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
-    _, stadiums = execute_query("SELECT StadiumID, Name FROM STADIUM ORDER BY Name")
-    _, referees = execute_query("""
+    _, teams , _ = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
+    _, stadiums , _ = execute_query("SELECT StadiumID, Name FROM STADIUM ORDER BY Name")
+    _, referees , _ = execute_query("""
         SELECT r.ID, per.GivenName || ' ' || per.FamilyName AS Name
         FROM REFEREE r JOIN PERSON per ON r.ID = per.ID ORDER BY per.FamilyName
     """)
@@ -383,14 +383,14 @@ def match_edit(mid):
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
 
-    cols, rows = execute_query("SELECT * FROM MATCH WHERE MatchID = %s", [mid])
+    cols, rows , _ = execute_query("SELECT * FROM MATCH WHERE MatchID = %s", [mid])
     if not rows:
         flash("Match not found.", "error")
         return redirect(url_for("matches"))
     match = dict(zip([c.lower() for c in cols], rows[0]))
-    _, teams = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
-    _, stadiums = execute_query("SELECT StadiumID, Name FROM STADIUM ORDER BY Name")
-    _, referees = execute_query("""
+    _, teams , _ = execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")
+    _, stadiums , _ = execute_query("SELECT StadiumID, Name FROM STADIUM ORDER BY Name")
+    _, referees , _ = execute_query("""
         SELECT r.ID, per.GivenName || ' ' || per.FamilyName AS Name
         FROM REFEREE r JOIN PERSON per ON r.ID = per.ID ORDER BY per.FamilyName
     """)
@@ -415,7 +415,7 @@ def stadiums():
     q = request.args.get("q", "")
     where = "WHERE s.Name ILIKE %s" if q else ""
     params = [f"%{q}%"] if q else []
-    _, rows = execute_query(f"""
+    _, rows , _ = execute_query(f"""
         SELECT s.StadiumID, s.Name, s.City, s.Capacity, s.Country,
                COUNT(DISTINCT m.MatchID) AS MatchesHosted
         FROM STADIUM s LEFT JOIN MATCH m ON s.StadiumID = m.StadiumID
@@ -481,7 +481,7 @@ def referees():
     q = request.args.get("q", "")
     where = "WHERE (per.GivenName ILIKE %s OR per.FamilyName ILIKE %s)" if q else ""
     params = [f"%{q}%", f"%{q}%"] if q else []
-    _, rows = execute_query(f"""
+    _, rows , _ = execute_query(f"""
         SELECT r.ID, per.GivenName || ' ' || per.FamilyName AS FullName,
                r.Country, r.ConfederationName,
                COUNT(DISTINCT m.MatchID) AS MatchesOfficiated
@@ -552,7 +552,7 @@ def events():
     q = request.args.get("q", "")
     where = "WHERE (per.GivenName ILIKE %s OR per.FamilyName ILIKE %s)" if q else ""
     params = [f"%{q}%", f"%{q}%"] if q else []
-    _, rows = execute_query(f"""
+    _, rows , _ = execute_query(f"""
         SELECT me.MatchEventID, me.Minute, me.EventType,
                ht.CountryName || ' vs ' || gt.CountryName AS MatchName,
                per.GivenName || ' ' || per.FamilyName AS PlayerName
@@ -606,23 +606,28 @@ def queries():
 
 @app.route("/api/query", methods=["POST"])
 def api_query():
-    sql = request.json.get("sql")
+    sql = request.json.get("sql", "").strip()
+    if not session.get("is_admin"):
+        if not sql.upper().lstrip().startswith("SELECT"):
+            return jsonify({"success": False, "error": "Only SELECT queries allowed for regular users."})
     try:
-        cols, rows = execute_query(sql)
-        return jsonify({"success": True, "columns": cols, "rows": [[str(c) if c is not None else "" for c in r] for r in rows]})
+        cols, rows, notices = execute_query(sql)
+        return jsonify({"success": True, "columns": cols, "rows": [[str(c) if c is not None else "" for c in r] for r in rows], "notices": notices})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
 
 @app.route("/api/execute", methods=["POST"])
 def api_execute():
+    if not session.get("is_admin"):
+        return jsonify({"success": False, "error": "Admin access required to execute procedures."})
     sql = request.json.get("sql")
     params = request.json.get("params", [])
     try:
-        cols, rows = execute_query(sql, params)
+        cols, rows, notices = execute_query(sql, params)
         if cols:
-            return jsonify({"success": True, "columns": cols, "rows": [[str(c) if c is not None else "" for c in r] for r in rows]})
-        return jsonify({"success": True})
+            return jsonify({"success": True, "columns": cols, "rows": [[str(c) if c is not None else "" for c in r] for r in rows], "notices": notices})
+        return jsonify({"success": True, "notices": notices})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
