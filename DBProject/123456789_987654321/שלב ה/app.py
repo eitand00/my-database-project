@@ -64,10 +64,11 @@ def execute_query(query, params=None):
     return False
 
 # Sidebar Navigation
-st.sidebar.title("⚽ ניהול מונדיאל")
+st.sidebar.title("⚽ WORLDCUP MANAGER")
 st.sidebar.markdown("---")
 page = st.sidebar.radio("בחר מסך:", [
-    "🏠 דף הבית", 
+    "🏠 לוח בקרה (Dashboard)", 
+    "🔍 חיפוש שחקן",
     "🛡️ ניהול קבוצות (TEAM)", 
     "🏃 ניהול שחקנים (PLAYER)", 
     "🏟️ ניהול אצטדיונים (STADIUM)",
@@ -79,23 +80,212 @@ st.sidebar.markdown("---")
 st.sidebar.info("פותח ע״י צוות הפרויקט.")
 
 # ---------------------------------------------------------
-# Page 1: Home
+# Page 1: Dashboard
 # ---------------------------------------------------------
-if page == "🏠 דף הבית":
-    st.title("ברוכים הבאים למערכת ניהול המונדיאל 🏆")
+if page == "🏠 לוח בקרה (Dashboard)":
     st.markdown("""
-    מערכת זו מאפשרת לנהל את נתוני המונדיאל ולתפעל את פלטפורמת ההימורים.
+        <style>
+        .metric-card {
+            background-color: #1e293b;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-top: 10px;
+        }
+        .metric-label {
+            color: #94a3b8;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .match-card {
+            background-color: #1e293b;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .stage-badge {
+            background-color: #9f1239;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .team-col {
+            text-align: center;
+            flex: 1;
+        }
+        .team-circle {
+            background-color: #334155;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .team-name {
+            color: #f8fafc;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .score-col {
+            text-align: center;
+            flex: 1;
+        }
+        .score {
+            font-size: 42px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+        .ft-badge {
+            color: #22c55e;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .match-footer {
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 14px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.title("WORLDCUP MANAGER")
+    st.markdown("---")
+
+    # Fetch Metrics
+    tot_matches = run_query("SELECT COUNT(*) FROM MATCH").iloc[0,0]
+    tot_goals = run_query("SELECT COUNT(*) FROM MATCH_EVENT WHERE EventType = 'Goal'").iloc[0,0]
+    tot_stad = run_query("SELECT COUNT(*) FROM STADIUM").iloc[0,0]
+    tot_players = run_query("SELECT COUNT(*) FROM PLAYER").iloc[0,0]
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Total Matches</div><div class="metric-value">{tot_matches}</div></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Goals Scored</div><div class="metric-value">{tot_goals}</div></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Stadiums</div><div class="metric-value">{tot_stad}</div></div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Active Players</div><div class="metric-value">{tot_players}</div></div>', unsafe_allow_html=True)
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    # Fetch recent matches for cards
+    matches_q = """
+    WITH match_scores AS (
+        SELECT m.matchid,
+               SUM(CASE WHEN pl.teamcode = m.hometeamcode THEN 1 ELSE 0 END) AS h_goals,
+               SUM(CASE WHEN pl.teamcode = m.guestteamcode THEN 1 ELSE 0 END) AS g_goals
+        FROM match m
+        LEFT JOIN match_event me ON m.matchid = me.matchid AND me.eventtype = 'Goal'
+        LEFT JOIN player pl ON me.id = pl.id
+        GROUP BY m.matchid
+    )
+    SELECT m.MatchID, m.Stage, m.MatchDate, s.Name as Stadium,
+           ht.CountryName as HomeName, ht.TeamCode as HomeCode,
+           gt.CountryName as GuestName, gt.TeamCode as GuestCode,
+           COALESCE(ms.h_goals, 0) as HScore, COALESCE(ms.g_goals, 0) as GScore
+    FROM MATCH m
+    JOIN TEAM ht ON m.HomeTeamCode = ht.TeamCode
+    JOIN TEAM gt ON m.GuestTeamCode = gt.TeamCode
+    JOIN STADIUM s ON m.StadiumID = s.StadiumID
+    LEFT JOIN match_scores ms ON m.MatchID = ms.matchid
+    ORDER BY m.MatchDate DESC LIMIT 6
+    """
+    df_m = run_query(matches_q)
+
+    if not df_m.empty:
+        # Show 3 cards per row
+        for i in range(0, len(df_m), 3):
+            cols = st.columns(3)
+            for j in range(3):
+                if i + j < len(df_m):
+                    row = df_m.iloc[i+j]
+                    date_str = str(row['matchdate'])
+                    card_html = f"""
+                    <div class="match-card">
+                        <div class="match-header">
+                            <span>ID: WC-{row['matchid']:03d}</span>
+                            <span class="stage-badge">{row['stage'].upper()}</span>
+                        </div>
+                        <div class="match-teams">
+                            <div class="team-col">
+                                <div class="team-circle">{row['homecode']}</div>
+                                <div class="team-name">{row['homename']}</div>
+                            </div>
+                            <div class="score-col">
+                                <div class="score">{row['hscore']} - {row['gscore']}</div>
+                                <div class="ft-badge">FULL TIME</div>
+                            </div>
+                            <div class="team-col">
+                                <div class="team-circle">{row['guestcode']}</div>
+                                <div class="team-name">{row['guestname']}</div>
+                            </div>
+                        </div>
+                        <div class="match-footer">
+                            <span>📍 {row['stadium']}</span>
+                            <span>📅 {date_str}</span>
+                        </div>
+                    </div>
+                    """
+                    cols[j].markdown(card_html, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------
+# Page: Player Search
+# ---------------------------------------------------------
+elif page == "🔍 חיפוש שחקן":
+    st.title("חיפוש שחקן (Player Search)")
+    st.markdown("חפש שחקנים לפי שם או חלק משם כדי לקבל את הנתונים שלהם.")
     
-    **יכולות המערכת:**
-    * **CRUD מלא** עבור טבלאות מרכזיות (קבוצות, שחקנים, אצטדיונים).
-    * הצגת הנתונים תוך שימוש ב-JOINs להצגת שמות משמעותיים (ולא סתם מפתחות זרים).
-    * **הרצת שאילתות מתקדמות** משלב ב' של הפרויקט.
-    * **תפעול לוגיקה עסקית** (פונקציות ופרוצדורות מ-PL/pgSQL) להפקדת הימורים וחישוב רווחים משלב ד'.
-    
-    בחר מסך מהתפריט בצד כדי להתחיל.
-    """)
-    
-    st.image("https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
+    search_term = st.text_input("הכנס שם שחקן:")
+    if search_term:
+        search_q = """
+        SELECT pl.ID as "מזהה", pe.GivenName || ' ' || pe.FamilyName as "שם השחקן",
+               pl.DateOfBirth as "תאריך לידה", t.CountryName as "נבחרת",
+               t.ConfederationName as "קונפדרציה"
+        FROM PLAYER pl
+        JOIN PERSON pe ON pl.ID = pe.ID
+        LEFT JOIN TEAM t ON pl.TeamCode = t.TeamCode
+        WHERE pe.GivenName ILIKE %s OR pe.FamilyName ILIKE %s
+        ORDER BY pe.GivenName
+        """
+        like_term = f"%{search_term}%"
+        res_df = run_query(search_q, (like_term, like_term))
+        if not res_df.empty:
+            st.success(f"נמצאו {len(res_df)} תוצאות עבור '{search_term}':")
+            st.dataframe(res_df, use_container_width=True)
+        else:
+            st.warning("לא נמצאו שחקנים התואמים לחיפוש.")
 
 # ---------------------------------------------------------
 # Page 2: TEAM CRUD
@@ -447,20 +637,17 @@ elif page == "📊 שאילתות (שלב ב')":
 
     st.markdown("---")
 
-    st.subheader("נבחרות שהבקיעו מעל 2 שערים בטורניר (וזמני שערים)")
+    st.subheader("5 הנבחרות עם הכי הרבה שחקנים במונדיאל")
     if st.button("הצג נתונים", key="q8"):
         query8 = """
-        SELECT t.countryname AS "נבחרת",
-               COUNT(me.matcheventid) AS "סך שערים שהובקעו",
-               MIN(me.minute) AS "דקת שער מהיר ביותר",
-               MAX(me.minute) AS "דקת שער מאוחר ביותר"
-        FROM team t
-        JOIN player pl ON t.teamcode = pl.teamcode
-        JOIN match_event me ON pl.id = me.id
-        WHERE LOWER(me.eventtype) = 'goal'
-        GROUP BY t.teamcode, t.countryname
-        HAVING COUNT(me.matcheventid) > 2
-        ORDER BY "סך שערים שהובקעו" DESC;
+        SELECT t.CountryName AS "נבחרת",
+               COUNT(pl.ID) AS "מספר שחקנים",
+               t.ConfederationName AS "קונפדרציה"
+        FROM TEAM t
+        JOIN PLAYER pl ON t.TeamCode = pl.TeamCode
+        GROUP BY t.TeamCode, t.CountryName, t.ConfederationName
+        ORDER BY "מספר שחקנים" DESC
+        LIMIT 5;
         """
         df8 = run_query(query8)
         st.dataframe(df8, use_container_width=True)
