@@ -157,7 +157,7 @@ function runFunction(type) {
   }
 
   log(`Running: ${sql}`);
-  fetch('/api/query', {
+  fetch('/api/function', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({sql, params})
