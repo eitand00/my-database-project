@@ -1,5 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_connection import execute_query
+from db_helpers import (
+    get_events_list, create_event, delete_event
+)
 from . import admin_required
 
 
@@ -7,11 +9,7 @@ def init_routes(app):
     @app.route("/events")
     def events():
         q = request.args.get("q", "")
-        where = "WHERE (givenname ILIKE %s OR familyname ILIKE %s)" if q else ""
-        params = [f"%{q}%", f"%{q}%"] if q else []
-        _, rows, _ = execute_query(
-            f"SELECT * FROM vw_events_list {where}", params
-        )
+        rows = get_events_list(search=q or None)
         return render_template("events.html", events=rows, q=q)
 
     @app.route("/events/add", methods=["POST"])
@@ -23,10 +21,7 @@ def init_routes(app):
         match_id = request.form.get("match_id")
         player_id = request.form.get("player_id")
         try:
-            execute_query(
-                "CALL sp_event_insert(%s,%s,%s,%s,%s)",
-                [eid, minute, etype, match_id, player_id], fetch=False
-            )
+            create_event(eid, minute, etype, match_id, player_id)
             flash("Event added successfully!", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
@@ -36,7 +31,7 @@ def init_routes(app):
     @admin_required
     def event_delete(eid):
         try:
-            execute_query("CALL sp_event_delete(%s)", [eid], fetch=False)
+            delete_event(eid)
             flash("Event deleted successfully!", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "error")

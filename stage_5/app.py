@@ -13,7 +13,7 @@ def inject_admin():
     return {"is_admin": session.get("is_admin", False)}
 
 
-from db_connection import execute_query
+from db_helpers import get_dashboard_counts
 from routes import admin_required
 from routes.teams import init_routes as init_teams
 from routes.players import init_routes as init_players
@@ -39,21 +39,13 @@ init_auth(app)
 @app.route("/")
 def index():
     try:
-        cols, rows, _ = execute_query("SELECT * FROM vw_dashboard_counts")
-        if rows:
-            mc = rows[0][0]
-            tc = rows[0][1]
-            pc = rows[0][2]
-            sc = rows[0][3]
-            ec = rows[0][4]
-        else:
-            mc = tc = pc = sc = ec = 0
+        counts = get_dashboard_counts()
     except Exception as e:
-        mc = tc = pc = sc = ec = 0
+        counts = {"match_count": 0, "team_count": 0, "player_count": 0,
+                  "stadium_count": 0, "event_count": 0}
         flash(f"Database connection error: {str(e)}", "error")
 
-    return render_template("index.html", match_count=mc, team_count=tc,
-                           player_count=pc, stadium_count=sc, event_count=ec)
+    return render_template("index.html", **counts)
 
 
 if __name__ == "__main__":

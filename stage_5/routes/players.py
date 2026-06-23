@@ -1,5 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_connection import execute_query
+from db_helpers import (
+    get_players_list, get_player_detail, get_player_events, get_player_stats,
+    get_teams_short, create_player, update_player, delete_player
+)
 from . import admin_required
 
 
@@ -7,29 +10,18 @@ def init_routes(app):
     @app.route("/players")
     def players():
         q = request.args.get("q", "")
-        where = "WHERE (givenname ILIKE %s OR familyname ILIKE %s)" if q else ""
-        params = [f"%{q}%", f"%{q}%"] if q else []
-        _, rows, _ = execute_query(
-            f"SELECT * FROM vw_players_list {where}", params
-        )
-        _, teams, _ = execute_query("SELECT * FROM vw_teams_short")
+        rows = get_players_list(search=q or None)
+        teams = get_teams_short()
         return render_template("players.html", players=rows, teams=teams, q=q)
 
     @app.route("/players/<pid>")
     def player_detail(pid):
-        cols, rows, _ = execute_query(
-            "SELECT * FROM vw_player_detail WHERE ID = %s", [pid]
-        )
-        if not rows:
+        player = get_player_detail(pid)
+        if not player:
             flash("Player not found.", "error")
             return redirect(url_for("players"))
-        player = dict(zip([c.lower() for c in cols], rows[0]))
-        _, events, _ = execute_query(
-            "SELECT * FROM vw_player_events WHERE PlayerID = %s", [pid]
-        )
-        _, stats, _ = execute_query(
-            "SELECT * FROM vw_player_match_stats WHERE PlayerID = %s", [pid]
-        )
+        events = get_player_events(pid)
+        stats = get_player_stats(pid)
         return render_template("player_detail.html", player=player, events=events, stats=stats)
 
     @app.route("/players/<pid>/edit", methods=["POST"])
@@ -41,10 +33,7 @@ def init_routes(app):
         family_name = request.form.get("family_name")
         wiki = request.form.get("wiki")
         try:
-            execute_query(
-                "CALL sp_player_update(%s,%s,%s,%s,%s,%s)",
-                [pid, dob, team_code, given_name, family_name, wiki], fetch=False
-            )
+            update_player(pid, dob, team_code, given_name, family_name, wiki)
             flash("Player updated successfully!", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
@@ -60,10 +49,7 @@ def init_routes(app):
         dob = request.form.get("dateofbirth")
         team = request.form.get("team_code")
         try:
-            execute_query(
-                "CALL sp_player_insert(%s,%s,%s,%s,%s,%s)",
-                [pid, given, family, wiki, dob, team], fetch=False
-            )
+            create_player(pid, given, family, wiki, dob, team)
             flash("Player added successfully!", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
@@ -73,7 +59,7 @@ def init_routes(app):
     @admin_required
     def player_delete(pid):
         try:
-            execute_query("CALL sp_player_delete(%s)", [pid], fetch=False)
+            delete_player(pid)
             flash("Player deleted successfully!", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "error")

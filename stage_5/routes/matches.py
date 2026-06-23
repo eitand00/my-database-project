@@ -1,5 +1,10 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_connection import execute_query
+from db_helpers import (
+    get_matches_list, get_tournaments, get_match_detail,
+    get_match_events, get_match_player_stats,
+    get_teams_short, get_stadiums_short, get_referees_short,
+    create_match, update_match, delete_match
+)
 from . import admin_required
 
 
@@ -7,30 +12,19 @@ def init_routes(app):
     @app.route("/matches")
     def matches():
         tournament = request.args.get("tournament", "")
-        where = "WHERE tournament = %s" if tournament else ""
-        params = [tournament] if tournament else []
-        _, rows, _ = execute_query(
-            f"SELECT * FROM vw_matches_list {where}", params
-        )
-        _, tournaments, _ = execute_query("SELECT * FROM vw_tournaments")
+        rows = get_matches_list(tournament=tournament or None)
+        tournaments = get_tournaments()
         return render_template("matches.html", matches=rows, tournaments=tournaments,
                                selected_tournament=tournament)
 
     @app.route("/matches/<mid>")
     def match_detail(mid):
-        cols, rows, _ = execute_query(
-            "SELECT * FROM vw_match_detail WHERE MatchID = %s", [mid]
-        )
-        if not rows:
+        match = get_match_detail(mid)
+        if not match:
             flash("Match not found.", "error")
             return redirect(url_for("matches"))
-        match = dict(zip([c.lower() for c in cols], rows[0]))
-        _, events, _ = execute_query(
-            "SELECT * FROM vw_match_events WHERE MatchID = %s", [mid]
-        )
-        _, stats, _ = execute_query(
-            "SELECT * FROM vw_match_player_stats WHERE MatchID = %s", [mid]
-        )
+        events = get_match_events(mid)
+        stats = get_match_player_stats(mid)
         return render_template("match_detail.html", match=match, events=events, stats=stats)
 
     @app.route("/matches/add", methods=["GET", "POST"])
@@ -47,18 +41,14 @@ def init_routes(app):
             guest = request.form.get("guest")
             referee = request.form.get("referee")
             try:
-                execute_query(
-                    "CALL sp_match_insert(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                    [mid, mdate, stage, tournament, time, stadium, home, guest, referee],
-                    fetch=False
-                )
+                create_match(mid, mdate, stage, tournament, time, stadium, home, guest, referee)
                 flash("Match added successfully!", "success")
                 return redirect(url_for("matches"))
             except Exception as e:
                 flash(f"Error: {str(e)}", "error")
-        _, teams, _ = execute_query("SELECT * FROM vw_teams_short")
-        _, stadiums, _ = execute_query("SELECT * FROM vw_stadiums_short")
-        _, referees, _ = execute_query("SELECT * FROM vw_referees_short")
+        teams = get_teams_short()
+        stadiums = get_stadiums_short()
+        referees = get_referees_short()
         return render_template("match_form.html", match=None, teams=teams,
                                stadiums=stadiums, referees=referees)
 
@@ -75,25 +65,18 @@ def init_routes(app):
             guest = request.form.get("guest")
             referee = request.form.get("referee")
             try:
-                execute_query(
-                    "CALL sp_match_update(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                    [mid, mdate, stage, tournament, time, stadium, home, guest, referee],
-                    fetch=False
-                )
+                update_match(mid, mdate, stage, tournament, time, stadium, home, guest, referee)
                 flash("Match updated successfully!", "success")
                 return redirect(url_for("match_detail", mid=mid))
             except Exception as e:
                 flash(f"Error: {str(e)}", "error")
-        cols, rows, _ = execute_query(
-            "SELECT * FROM vw_match_detail WHERE MatchID = %s", [mid]
-        )
-        if not rows:
+        match = get_match_detail(mid)
+        if not match:
             flash("Match not found.", "error")
             return redirect(url_for("matches"))
-        match = dict(zip([c.lower() for c in cols], rows[0]))
-        _, teams, _ = execute_query("SELECT * FROM vw_teams_short")
-        _, stadiums, _ = execute_query("SELECT * FROM vw_stadiums_short")
-        _, referees, _ = execute_query("SELECT * FROM vw_referees_short")
+        teams = get_teams_short()
+        stadiums = get_stadiums_short()
+        referees = get_referees_short()
         return render_template("match_form.html", match=match, teams=teams,
                                stadiums=stadiums, referees=referees)
 
@@ -101,7 +84,7 @@ def init_routes(app):
     @admin_required
     def match_delete(mid):
         try:
-            execute_query("CALL sp_match_delete(%s)", [mid], fetch=False)
+            delete_match(mid)
             flash("Match deleted successfully!", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
