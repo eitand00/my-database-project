@@ -39,17 +39,15 @@ init_auth(app)
 @app.route("/")
 def index():
     try:
-        _, match_count, _ = execute_query("SELECT COUNT(*) FROM MATCH")
-        _, team_count, _ = execute_query("SELECT COUNT(*) FROM TEAM")
-        _, player_count, _ = execute_query("SELECT COUNT(*) FROM PLAYER")
-        _, stadium_count, _ = execute_query("SELECT COUNT(*) FROM STADIUM")
-        _, event_count, _ = execute_query("SELECT COUNT(*) FROM MATCH_EVENT")
-
-        mc = match_count[0][0] if match_count else 0
-        tc = team_count[0][0] if team_count else 0
-        pc = player_count[0][0] if player_count else 0
-        sc = stadium_count[0][0] if stadium_count else 0
-        ec = event_count[0][0] if event_count else 0
+        cols, rows, _ = execute_query("SELECT * FROM vw_dashboard_counts")
+        if rows:
+            mc = rows[0][0]
+            tc = rows[0][1]
+            pc = rows[0][2]
+            sc = rows[0][3]
+            ec = rows[0][4]
+        else:
+            mc = tc = pc = sc = ec = 0
     except Exception as e:
         mc = tc = pc = sc = ec = 0
         flash(f"Database connection error: {str(e)}", "error")
