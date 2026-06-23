@@ -1,2 +1,0 @@
-CREATE OR REPLACE VIEW vw_tournaments AS
-SELECT DISTINCT Tournament FROM MATCH ORDER BY Tournament;

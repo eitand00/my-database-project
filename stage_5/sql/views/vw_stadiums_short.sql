@@ -1,2 +1,0 @@
-CREATE OR REPLACE VIEW vw_stadiums_short AS
-SELECT StadiumID, Name FROM STADIUM ORDER BY Name;
