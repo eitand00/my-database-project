@@ -62,6 +62,7 @@ Required configuration:
 - `DB_NAME_SECRET` - PostgreSQL database name
 - `PGADMIN_EMAIL` - login email for pgAdmin
 - `PGADMIN_PASSWORD` - login password for pgAdmin
+- `ADMIN_CODE` - login password for admin mode
 
 You can copy `.env.example` to `.env` and edit the values before running Docker Compose.
 
