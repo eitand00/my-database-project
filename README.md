@@ -1,26 +1,59 @@
-# World Cup Statistics Database Project
+# פרויקט בסיס נתונים: סטטיסטיקות מונדיאל (World Cup Statistics)
 
-## Overview
-This project is a comprehensive database system focused on **analyzing statistics and historical data** from FIFA World Cup tournaments. Instead of generating artificial data, the database is populated entirely by processing and adapting a **real historical dataset** to fit our normalized database schema. This provides an authentic and robust foundation for running advanced SQL queries, aggregations, and performance analytics.
+**מוגש על ידי:** 
+* בנימין אליהו פורקוביץ - 330995135
+* איתן דהן - 330824061
 
-## Key Features
-* **Historical Data Analysis:** Built upon authentic datasets covering past World Cup matches, teams, and stadiums.
-* **Data Transformation (ETL):** Python and SQL were utilized to process, clean, and map the raw external dataset into our specific relational tables.
-* **Comprehensive Tracking:** Stores detailed match events (goals, fouls, cards, substitutions) and post-match statistics for individual players.
-* **Robust Architecture:** Built on PostgreSQL using Docker, featuring a normalized schema with inherited entities (Super-type/Sub-type).
+**האגף הנבחר:** ניתוח סטטיסטי של משחקים, שחקנים וטורנירים.
 
-## Project Structure
-* **Stage 1:** Database initialization, system characterization (AI Studio), ERD/DSD design, massive data insertion (3 methods), and backup/restore procedures.
-* **Stage 2:** Advanced SQL queries (JOINs, Window Functions, Grouping), Views, and data analysis.
-* **Stage 3:** System integration with betting database, reverse engineering, super-type mapping, data migration, and views.
-* **Stage 4:** PL/pgSQL programming - functions, procedures, triggers, cursors, and main programs.
-* **Stage 5:** Web-based graphical interface (Flask + Bootstrap 5) for database management: CRUD operations, query execution, and procedure/function execution.
+---
 
-## Technologies Used
-* **Database:** PostgreSQL (Dockerized)
-* **Data Processing & ETL:** Python for data processing.
-* **Design Tools:** ERDPlus, Google AI Studio
+## תוכן עניינים
+1. [הקדמה ומטרת המערכת](#הקדמה-ומטרת-המערכת)
+2. [אפיון המערכת (AI Studio)](#אפיון-המערכת-ai-studio)
+3. [תרשימי מבנה (ERD & DSD)](#תרשימי-מבנה-erd--dsd)
+4. [החלטות עיצוב וארכיטקטורה](#החלטות-עיצוב-וארכיטקטורה)
 
+---
+
+## הקדמה ומטרת המערכת
+מערכת זו מיועדת לניתוח הסטטיסטיקות המורכבות סביב משחקי גביע העולם בכדורגל (המונדיאל). הפרויקט עושה שימוש **במאגר נתונים היסטורי ואמיתי** של מונדיאלים בעבר, ומעבד רשומות אותנטיות למבנה רלציוני מנורמל. 
+
+פונקציונליות הליבה של המערכת מתמקדת במעקב אחר משחקים היסטוריים, תיעוד אירועים ספציפיים (שערים, כרטיסים) ברמת הדקה, ואיסוף סטטיסטיקות מדויקות לכל שחקן. המערכת תומכת בשליפת נתונים מורכבת המאפשרת לחקור ולנתח את ביצועי השחקנים והנבחרות על בסיס היסטוריית הכדורגל האמיתית, ולא על ניהול טורנירים עתידיים.
+
+---
+
+## אפיון המערכת (AI Studio)
+ממשקי המשתמש הראשוניים ולוחות הבקרה הסטטיסטיים של המערכת אופיינו באמצעות Google AI Studio. 
+
+**קישור לפרויקט ב-AI Studio:** [הכנס כאן את הקישור שלך]
+
+**מסכי המערכת:**
+![מסך הבית](stage_1/images/S1.png)
+![סטטיסטיקות נבחרת](stage_1/images/S2.png)
+![סטטיסטיקות שחקן](stage_1/images/S3.png)
+![סיכום משחק](stage_1/images/S4.png)
+
+---
+
+## תרשימי מבנה (ERD & DSD)
+המבנה הלוגי והפיזי של בסיס הנתונים שלנו, שעוצב במטרה לייעל שליפה ותשאול של נתונים סטטיסטיים.
+
+**תרשים קשר-ישות (ERD):**
+![תרשים ERD](stage_1/images/ERD.png)
+
+**תרשים מבנה נתונים (DSD):**
+![תרשים DSD](stage_1/images/DSD.png)
+
+---
+
+## החלטות עיצוב וארכיטקטורה
+במהלך תכנון בסיס הנתונים, קיבלנו מספר החלטות ארכיטקטוניות מרכזיות:
+* **ישויות אב/בן (Super-type / Sub-type):** יצרנו טבלת `PERSON` מרכזית המכילה תכונות משותפות (כמו שם ותאריך לידה), ממנה יורשות הטבלאות `PLAYER` (שחקן) ו-`REFEREE` (שופט). עיצוב זה מונע כפילות נתונים ומפשט קיבוץ סטטיסטי.
+* **טבלאות מקשרות לאירועים וסטטיסטיקות:** יצרנו טבלאות ייעודיות (`MATCH_EVENT` ו-`PLAYER_MATCH_STATS`) המקושרות גם למשחק וגם לשחקן. דבר זה מאפשר מעקב גרנולרי (פרטני) אחר אירועים ואגרגציות `GROUP BY` יעילות.
+* **שילוב נתונים היסטוריים אמיתיים:** התאמנו את הסכמה שלנו כך שתכיל אך ורק מאגרי נתונים מהעולם האמיתי. וידאנו שסוגי הנתונים (Data Types) והאילוצים (Constraints) שלנו תואמים לתרחישים היסטוריים אותנטיים, מבלי לפברק רשומות או לייצר מצבים לא הגיוניים.
+
+  
 ## Quick Start
 Required configuration:
 
