@@ -1,0 +1,2 @@
+CREATE OR REPLACE VIEW vw_team_detail AS
+SELECT * FROM TEAM;
