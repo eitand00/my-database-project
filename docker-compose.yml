@@ -43,6 +43,34 @@ services:
       - zoo_network
 
   # -------------------------
+  # Flask web app
+  # -------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_app
+    restart: always
+    working_dir: /app/stage_5
+    command: python app.py
+    volumes:
+      - ./stage_5:/app/stage_5
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME_SECRET: ${DB_NAME_SECRET}
+      DB_USER_SECRET: ${DB_USER_SECRET}
+      DB_PASSWORD_SECRET: ${DB_PASSWORD_SECRET}
+      ADMIN_CODE: ${ADMIN_CODE}
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - zoo_network
+
+  # -------------------------
   # Python importer
   # -------------------------
   importer:
