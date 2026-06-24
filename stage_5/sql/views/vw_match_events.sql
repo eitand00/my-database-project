@@ -5,4 +5,4 @@ SELECT me.MatchEventID, me.Minute, me.EventType,
 FROM MATCH_EVENT me
 JOIN PLAYER pl ON me.ID = pl.ID
 JOIN PERSON per ON pl.ID = per.ID
-ORDER BY regexp_replace(me.Minute, '[+''].*$', '')::int ASC;
+ORDER BY me.Minute ASC;
