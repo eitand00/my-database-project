@@ -3,3 +3,6 @@
 __pycache__/
 *.pyc
 *.pyo
+# Flask log files
+stage_5/flask_err.txt
+stage_5/flask_out.txt
