@@ -1,5 +1,0 @@
-CREATE OR REPLACE PROCEDURE sp_referee_delete(p_rid INT) LANGUAGE plpgsql AS $$
-BEGIN
-  DELETE FROM REFEREE WHERE ID = p_rid;
-  DELETE FROM PERSON WHERE ID = p_rid;
-END $$;

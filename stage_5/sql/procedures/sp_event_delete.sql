@@ -1,4 +1,0 @@
-CREATE OR REPLACE PROCEDURE sp_event_delete(p_eid INT) LANGUAGE plpgsql AS $$
-BEGIN
-  DELETE FROM MATCH_EVENT WHERE MatchEventID = p_eid;
-END $$;

@@ -68,7 +68,7 @@ def get_teams_list(search=None):
 
 def get_team_detail(code):
     cols, rows, _ = execute_query(
-        "SELECT * FROM TEAM WHERE TeamCode = %s", [code]
+        "SELECT * FROM vw_team_detail WHERE TeamCode = %s", [code]
     )
     if not rows:
         return None
@@ -163,7 +163,7 @@ def get_matches_list(tournament=None):
 
 
 def get_tournaments():
-    return execute_query("SELECT DISTINCT Tournament FROM MATCH ORDER BY Tournament")[1]
+    return execute_query("SELECT * FROM vw_tournaments")[1]
 
 
 def get_match_detail(mid):
@@ -188,17 +188,15 @@ def get_match_player_stats(mid):
 
 
 def get_teams_short():
-    return execute_query("SELECT TeamCode, CountryName FROM TEAM ORDER BY CountryName")[1]
+    return execute_query("SELECT * FROM vw_teams_short")[1]
 
 
 def get_stadiums_short():
-    return execute_query("SELECT StadiumID, Name FROM STADIUM ORDER BY Name")[1]
+    return execute_query("SELECT * FROM vw_stadiums_short")[1]
 
 
 def get_referees_short():
-    return execute_query(
-        "SELECT r.ID, per.GivenName || ' ' || per.FamilyName AS Name FROM REFEREE r JOIN PERSON per ON r.ID = per.ID ORDER BY per.FamilyName"
-    )[1]
+    return execute_query("SELECT * FROM vw_referees_short")[1]
 
 
 def create_match(mid, mdate, stage, tournament, time, stadium, home, guest, referee):
@@ -296,13 +294,7 @@ def delete_event(eid):
 
 
 def get_dashboard_counts():
-    _, rows, _ = execute_query(
-        "SELECT (SELECT COUNT(*) FROM MATCH) AS match_count, "
-        "(SELECT COUNT(*) FROM TEAM) AS team_count, "
-        "(SELECT COUNT(*) FROM PLAYER) AS player_count, "
-        "(SELECT COUNT(*) FROM STADIUM) AS stadium_count, "
-        "(SELECT COUNT(*) FROM MATCH_EVENT) AS event_count"
-    )
+    _, rows, _ = execute_query("SELECT * FROM vw_dashboard_counts")
     if rows:
         return {
             "match_count": rows[0][0],
