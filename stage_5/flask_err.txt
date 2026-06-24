@@ -1,0 +1,121 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.7.1.5:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\teams.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\events.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\matches.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\teams.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\players.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\matches.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\stadiums.py', reloading
+Exception in thread Thread-1 (serve_forever):
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\referees.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\routes\\events.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_helpers.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_helpers.py', reloading
+Exception in thread Thread-1 (serve_forever):
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_helpers.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_helpers.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_helpers.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_helpers.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\db_connection.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+ * Detected change in 'C:\\Users\\User\\Documents\\projects\\MDB\\my-database-project\\stage_5\\app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 633-154-935
+127.0.0.1 - - [24/Jun/2026 15:53:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:16] "GET /teams HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:16] "GET /teams?q=arg HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:16] "GET /teams/ARG HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 15:53:16] "GET /teams HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:17] "GET /teams/ARG/edit HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 15:53:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:17] "GET /players HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:17] "GET /players?q=maradona HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:17] "GET /players/1 HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 15:53:17] "GET /players HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:18] "GET /matches HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:18] "GET /matches?tournament=World+Cup+2018 HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:18] "GET /matches/1 HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 15:53:19] "GET /matches HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:19] "GET /matches/1/edit HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 15:53:19] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:19] "GET /matches/add HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 15:53:19] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:19] "GET /stadiums HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:20] "GET /stadiums?q=mar HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:20] "GET /referees HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:22] "GET /referees?q=john HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:22] "GET /events HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:22] "GET /events?q=maradona HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 15:53:22] "GET /reports HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:48] "GET /teams HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:49] "GET /players HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:49] "GET /stadiums HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:49] "GET /referees HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:49] "GET /events HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:01:49] "GET /reports HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:07:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:07:00] "GET /teams/ARG HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 16:07:00] "GET /teams HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:07:01] "GET /players/1 HTTP/1.1" 302 -
+127.0.0.1 - - [24/Jun/2026 16:07:01] "GET /players HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 16:07:01] "GET /reports HTTP/1.1" 200 -

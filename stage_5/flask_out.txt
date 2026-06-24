@@ -1,0 +1,78 @@
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+ * Serving Flask app 'app'
+ * Debug mode: on
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
+============================================================
+  World Cup Database Manager - Web Interface
+  Running at: http://localhost:5000
+============================================================
