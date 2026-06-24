@@ -34,14 +34,9 @@ DROP FUNCTION IF EXISTS Get_Match_Bettors_RefCursor(INT);
 DROP FUNCTION IF EXISTS Get_Match_Bettors(INT);
 
 -- ====================================================================
--- STAGE 1 — TABLES
+-- STAGE 1 — TABLES (Minute is TEXT for now; converted to INT later)
 -- ====================================================================
 \i stage_1/createTables.sql
-
--- ====================================================================
--- STAGE 2 — CONSTRAINTS
--- ====================================================================
-\i stage_2/Constraints.sql
 
 -- ====================================================================
 -- BETTING SYSTEM TABLES
@@ -193,8 +188,16 @@ CREATE TABLE transactions (
 
 -- ====================================================================
 -- DATA NOTE
--- This creates the structure only. To populate data:
---   World Cup: run Python ETL (docker compose --profile import run --rm importer)
---   Betting:   psql -U user_db -d world_cup_db -f stage_3/backup2.sql
---   Then run integration DO blocks from stage_4/data_population/
+-- This creates the structure only. To populate data AND apply constraints:
+--
+-- 1. Import data FIRST (while Minute column is still TEXT):
+--      World Cup: docker compose --profile import run --rm importer
+--      Betting:   psql -U user_db -d world_cup_db -f stage_3/backup2.sql
+--
+-- 2. THEN run constraints (converts Minute TEXT→INTEGER):
+--      psql -U user_db -d world_cup_db -f stage_2/Constraints.sql
+--
+-- The constraints (stage_2/Constraints.sql) are NOT included here
+-- because they convert MATCH_EVENT.Minute to INTEGER, which makes
+-- old backup data with values like "23'" or "45+3" unimportable.
 -- ====================================================================

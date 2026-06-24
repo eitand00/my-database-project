@@ -23,4 +23,4 @@ ADD CONSTRAINT chk_event_minute CHECK (Minute::integer > 0 AND Minute::integer <
 -- ׳׳™׳׳•׳¥ 3: ׳”׳’׳‘׳׳× ׳©׳׳‘׳™ ׳”׳˜׳•׳¨׳ ׳™׳¨ ׳׳¢׳¨׳›׳™׳ ׳׳•׳’׳“׳¨׳™׳ ׳׳¨׳׳©.
 -- ׳׳•׳ ׳¢ ׳˜׳¢׳•׳™׳•׳× ׳”׳§׳׳“׳” ׳›׳׳• 'Gmar' ׳‘׳׳§׳•׳ 'Final'.
 ALTER TABLE MATCH
-ADD CONSTRAINT chk_match_stage CHECK (Stage IN ('Group Stage', 'Round of 16', 'Quarter-Final', 'Semi-Final', 'Third Place', 'Final'));
+ADD CONSTRAINT chk_match_stage CHECK (Stage IN ('group stage', 'second group stage' , 'round of 16', 'quarter-finals', 'semi-finals', 'third-place match', 'final'));
