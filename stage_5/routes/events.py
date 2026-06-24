@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_helpers import (
+from db_connection import (
     get_events_list, create_event, delete_event
 )
 from . import admin_required

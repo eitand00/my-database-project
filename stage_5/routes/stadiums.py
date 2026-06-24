@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_helpers import (
+from db_connection import (
     get_stadiums_list, create_stadium, update_stadium, delete_stadium
 )
 from . import admin_required

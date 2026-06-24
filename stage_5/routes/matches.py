@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_helpers import (
+from db_connection import (
     get_matches_list, get_tournaments, get_match_detail,
     get_match_events, get_match_player_stats,
     get_teams_short, get_stadiums_short, get_referees_short,

@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_helpers import (
+from db_connection import (
     get_referees_list, create_referee, update_referee, delete_referee
 )
 from . import admin_required

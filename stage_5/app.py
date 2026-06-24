@@ -13,7 +13,7 @@ def inject_admin():
     return {"is_admin": session.get("is_admin", False)}
 
 
-from db_helpers import get_dashboard_counts
+from db_connection import get_dashboard_counts
 from routes import admin_required
 from routes.teams import init_routes as init_teams
 from routes.players import init_routes as init_players

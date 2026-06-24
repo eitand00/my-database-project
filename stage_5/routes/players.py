@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash
-from db_helpers import (
+from db_connection import (
     get_players_list, get_player_detail, get_player_events, get_player_stats,
     get_teams_short, create_player, update_player, delete_player
 )
