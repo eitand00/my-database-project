@@ -100,10 +100,10 @@ WHERE gm.GlobalMatchID = btu.GlobalMatchID;
 -- ====================================================================
 
 -- 1. ׳׳—׳™׳§׳× ׳¢׳׳•׳“׳× ׳”׳׳©׳—׳§ ׳”׳™׳©׳ ׳” ׳׳˜׳‘׳׳× ׳”׳”׳™׳׳•׳¨׳™׳ (׳׳•׳—׳§ ׳׳•׳˜׳•׳׳˜׳™׳× ׳׳× ׳”-FK ׳”׳™׳©׳)
-ALTER TABLE bets DROP COLUMN match_id;
+ALTER TABLE bets DROP COLUMN match_id CASCADE;
 
 -- 2. ׳׳—׳™׳§׳× ׳¢׳׳•׳“׳× ׳”׳׳©׳—׳§ ׳”׳™׳©׳ ׳” ׳׳˜׳‘׳׳× ׳™׳—׳¡׳™ ׳”׳–׳›׳™׳™׳”
-ALTER TABLE odds DROP COLUMN match_id;
+ALTER TABLE odds DROP COLUMN match_id CASCADE;
 
 -- 3. ׳”׳—׳׳× ׳׳™׳׳•׳¥ NOT NULL ׳¢׳ ׳”׳¢׳׳•׳“׳” ׳”׳’׳׳•׳‘׳׳™׳× ׳”׳—׳“׳©׳” (׳—׳•׳‘׳” ׳©׳›׳ ׳”׳™׳׳•׳¨/׳™׳—׳¡ ׳™׳¦׳‘׳™׳¢ ׳׳¦׳•׳׳× ׳”׳׳¨׳›׳–׳™)
 ALTER TABLE bets ALTER COLUMN global_match_id SET NOT NULL;

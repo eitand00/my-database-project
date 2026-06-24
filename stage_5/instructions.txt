@@ -1,66 +1,32 @@
 =========================================================
    WORLD CUP DATABASE MANAGER - STAGE 5
-   הוראות התקנה והפעלה
 =========================================================
 
 דרישות מקדימות:
-- PostgreSQL מורץ (Docker) על localhost:5432
-- Python 3.8+ מותקן
+- Docker מותקן ומור�
+- Python 3.8+ מותקן (להרצת האפליקציה בלבד)
 
 =========================================================
-א. התקנת מסד הנתונים (שלב 1-4)
+א. התקנת מסד הנתונים בפקודה אחת
 =========================================================
 
-1. העתק את תיקיית הפרויקט (my-database-project) למחשב שלך.
+1. העתק את תיקיית הפרויקט למחשבך.
 
-2. הרץ את קובץ ההתקנה המלא מתוך תיקיית הפרויקט:
-   psql -U user_db -d world_cup_db -f stage_5/sql/full_install.sql
+2. הרץ את הפקודה הבאה מתוך תיקיית הפרויקט:
+   docker compose --profile setup run --rm setup
 
-   קובץ זה יוצר את כל אובייקטי המסד:
-   - 8 טבלאות מונדיאל (PERSON, TEAM, PLAYER, REFEREE, STADIUM, MATCH, MATCH_EVENT, PLAYER_MATCH_STATS)
-   - 6 טבלאות הימורים (users, matches, odds, bets, teams, transactions)
-   - טבלת GLOBAL_MATCH לאינטגרציה
-   - 19 Views (2 משלב 3 + 17 משלב 5)
-   - 4 פונקציות (Calculate_Potential_Payout, Get_Match_Bettors_RefCursor, Get_Match_Bettors, + 2 trigger functions)
-   - 2 טריגרים (payout_on_win, prevent_negative_balance)
-   - 25 פרוצדורות (create_user, create_odd, create_bet, Mass_Update_Stage_Odds + 21 CRUD sp_*)
+   פקודה זו מבצעת הכל אוטומטית:
+   - יוצרת את כל אובייקטי המסד (טבלאות, Views, פונקציות, פרוצדורות, טריגרים)
+   - מייבאת נתוני מונדיאל (PERSON, TEAM, PLAYER, REFEREE, STADIUM, MATCH, MATCH_EVENT, PLAYER_MATCH_STATS)
+   - מייבאת נתוני הימורים (users, matches, odds, bets, teams, transactions)
+   - מריצה אינטגרציה (GLOBAL_MATCH, match_id -> global_match_id)
+   - מחילה אילוצים (MATCH_EVENT.Minute TEXT -> INTEGER)
 
-   הערה: קובץ זה יוצר מבנה בלבד. יש לייבא נתונים בנפרד (ראה סעיף ב).
-   אילוצים (constraints) מותקנים בנפרד אחרי ייבוא הנתונים (ראה סעיף ג).
-
-3. לחלופין, ניתן להתקין רק את תוספות שלב 5 על גבי מסד קיים:
-   cd stage_5/sql
-   psql -U user_db -d world_cup_db -f install.sql
+3. הרץ את מסד הנתונים (אם אינו רץ כבר):
+   docker compose up -d db
 
 =========================================================
-ב. ייבוא נתונים
-=========================================================
-
-הנתונים לא כלולים בקובץ ההתקנה. יש לייבא אותם כך:
-
-1. נתוני מונדיאל - הרץ את ה-ETL דרך Docker:
-   docker compose --profile import run --rm importer
-
-2. נתוני הימורים - שחזר מגיבוי:
-   psql -U user_db -d world_cup_db -f stage_3/backup2.sql
-
-=========================================================
-ג. התקנת אילוצים (Constraints)
-=========================================================
-
-יש להריץ אחרי ייבוא הנתונים. האילוצים ממירים את
-MATCH_EVENT.Minute מ-TEXT ל-INTEGER ומטפלים בערכים
-כמו "45+3" או "23'" (הופכים אותם ל-45 ו-23 בהתאמה).
-
-   psql -U user_db -d world_cup_db -f stage_2/Constraints.sql
-
-למה בנפרד? כי האילוצים משנים את סוג העמודה Minute מ-TEXT
-ל-INTEGER. אם מריצים אותם לפני ייבוא הנתונים, נתוני גיבוי
-ישנים עם ערכים כמו "23'" יגרמו לשגיאה. לכן הסדר הנכון:
-   full_install.sql → ייבוא נתונים → Constraints.sql
-
-=========================================================
-ד. הרצת אפליקציית ה-Web
+ב. הרצת אפליקציית ה-Web
 =========================================================
 
 1. נווט לתיקיית stage_5:
@@ -83,7 +49,7 @@ MATCH_EVENT.Minute מ-TEXT ל-INTEGER ומטפלים בערכים
 5. פתח בדפדפן: http://localhost:5000
 
 =========================================================
-ה. הרשאות
+ג. הרשאות
 =========================================================
 
 - משתמש רגיל: צפייה בלבד בכל המסכים
@@ -92,26 +58,25 @@ MATCH_EVENT.Minute מ-TEXT ל-INTEGER ומטפלים בערכים
   לאחר ההתחברות יופיעו אפשרויות עריכה, הוספה ומחיקה.
 
 =========================================================
-ו. ארכיטקטורת הקבצים
+ד. ארכיטקטורת הקבצים
 =========================================================
 
 stage_5/
   app.py                   - כניסת האפליקציה (Flask)
   db_connection.py         - חיבור למסד + פונקציות עזר
   routes/                  - 10 מודולי ניתוב, אפס SQL
-    teams.py, players.py, matches.py, stadiums.py,
-    referees.py, events.py, auth.py, procs.py,
-    reports.py, __init__.py
   templates/               - תבניות HTML (Bootstrap 5)
+  setup/
+    setup.sh               - סקריפט התקנה מלא (רץ דרך Docker)
   sql/
-    full_install.sql       - התקנת כל המסד בקובץ אחד
-    install.sql            - התקנת תוספות שלב 5 בלבד
+    full_install.sql       - יצירת מבנה המסד בלבד
+    install.sql            - תוספות שלב 5 בלבד
     views/                 - 17 Views (JOIN/GROUP BY מורכבים)
     functions/             - 3 פונקציות
     procedures/            - 21 פרוצדורות CRUD
 
 =========================================================
-ז. מסכי המערכת
+ה. מסכי המערכת
 =========================================================
 
 1. Home       - דשבורד עם סטטיסטיקות
@@ -123,3 +88,24 @@ stage_5/
 7. Events     - ניהול אירועי משחק
 8. Reports    - 3 שאילתות מוגדרות מראש
 9. Procedures - הפעלת פונקציות ופרוצדורות (דרוש Admin)
+
+=========================================================
+ו. התקנה ידנית (ללא Docker)
+=========================================================
+
+אם אינך משתמש ב-Docker, הרץ לפי הסדר:
+
+1. צור את המבנה:
+   psql -U user_db -d world_cup_db -f stage_5/sql/full_install.sql
+
+2. ייבא נתוני מונדיאל:
+   python stage_1/Programing/generate_data.py
+
+3. ייבא נתוני הימורים:
+   psql -U user_db -d world_cup_db -f stage_3/backup2.sql
+
+4. אינטגרציה:
+   psql -U user_db -d world_cup_db -f stage_3/Integrate.sql
+
+5. אילוצים:
+   psql -U user_db -d world_cup_db -f stage_2/Constraints.sql
