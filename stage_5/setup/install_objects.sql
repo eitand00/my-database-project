@@ -40,3 +40,8 @@
 \i stage_5/sql/entity/events.sql
 \i stage_5/sql/entity/reports.sql
 \i stage_5/sql/entity/dashboard.sql
+
+-- ====================================================================
+-- FILL MISSING ODDS (for matches without odds records)
+-- ====================================================================
+\i stage_4/data_population/fill_odds_in_empty_games.sql
