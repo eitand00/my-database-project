@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if match else 'Add' }} Match{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('matches') }}">Matches</a></li>
+      <li class="breadcrumb-item active">{{ 'Edit' if match else 'Add' }} Match</li>
+    </ol>
+  </nav>
+
+  <div class="card">
+    <div class="card-header" style="background: #16213e; color: white;">
+      <h5 class="mb-0"><i class="bi bi-{{ 'pencil' if match else 'plus-circle' }}"></i> {{ 'Edit' if match else 'Add' }} Match</h5>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="row">
+          {% if not match %}
+          <div class="col-md-6 mb-3"><label class="form-label">Match ID *</label><input name="matchid" class="form-control" required></div>
+          {% endif %}
+          <div class="col-md-6 mb-3"><label class="form-label">Date *</label><input name="matchdate" type="date" class="form-control" value="{{ match.matchdate if match else '' }}" required></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Stage *</label>
+            <select name="stage" class="form-select" required>
+              {% for s in ['Group Stage', 'Round of 16', 'Quarter-Final', 'Semi-Final', 'Third Place', 'Final'] %}
+              <option value="{{ s }}" {% if match and match.stage == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6 mb-3"><label class="form-label">Tournament *</label><input name="tournament" class="form-control" value="{{ match.tournament if match else 'World Cup' }}" required></div>
+          <div class="col-md-3 mb-3"><label class="form-label">Time</label><input name="matchtime" type="time" class="form-control" value="{{ match.matchtime if match else '' }}"></div>
+          <div class="col-md-3 mb-3"><label class="form-label">Stadium *</label>
+            <select name="stadium" class="form-select" required>
+              <option value="">-- Select --</option>
+              {% for s in stadiums %}
+              <option value="{{ s[0] }}" {% if match and match.stadiumid == s[0] %}selected{% endif %}>{{ s[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4 mb-3"><label class="form-label">Home Team *</label>
+            <select name="home" class="form-select" required>
+              <option value="">-- Select --</option>
+              {% for t in teams %}
+              <option value="{{ t[0] }}" {% if match and match.hometeamcode == t[0] %}selected{% endif %}>{{ t[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4 mb-3"><label class="form-label">Guest Team *</label>
+            <select name="guest" class="form-select" required>
+              <option value="">-- Select --</option>
+              {% for t in teams %}
+              <option value="{{ t[0] }}" {% if match and match.guestteamcode == t[0] %}selected{% endif %}>{{ t[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4 mb-3"><label class="form-label">Referee *</label>
+            <select name="referee" class="form-select" required>
+              <option value="">-- Select --</option>
+              {% for r in referees %}
+              <option value="{{ r[0] }}" {% if match and match.refereeid == r[0] %}selected{% endif %}>{{ r[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Save</button>
+        <a href="{{ url_for('matches') }}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

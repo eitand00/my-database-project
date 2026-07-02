@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 style="color: #16213e; font-weight: 700;"><i class="bi bi-people-fill" style="color: #e94560;"></i> National Teams</h3>
+    <div class="d-flex gap-2">
+      <form method="GET" action="{{ url_for('teams') }}" class="d-flex gap-2">
+        <input name="q" class="form-control" placeholder="Search by country..." value="{{ q }}" style="width:220px;">
+        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+        {% if q %}<a href="{{ url_for('teams') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>{% endif %}
+      </form>
+      {% if is_admin %}
+      <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#addModal">
+        <i class="bi bi-plus-lg"></i> Add Team
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Country</th>
+            <th>Confederation</th>
+            <th class="text-center">Players</th>
+            <th class="text-center">Matches</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if not teams %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No teams found.</td></tr>
+          {% endif %}
+          {% for t in teams %}
+          <tr>
+            <td><span class="badge bg-secondary">{{ t[0] }}</span></td>
+            <td><a href="{{ url_for('team_detail', code=t[0]) }}" class="fw-bold text-decoration-none">{{ t[1] }}</a></td>
+            <td>{{ t[2] }}</td>
+            <td class="text-center">{{ t[3] }}</td>
+            <td class="text-center">{{ t[4] }}</td>
+            <td class="text-center">
+              <a href="{{ url_for('team_detail', code=t[0]) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+              {% if is_admin %}
+              <a href="{{ url_for('team_edit', code=t[0]) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+              <form method="POST" action="{{ url_for('team_delete', code=t[0]) }}" style="display:inline;" onsubmit="return confirm('Delete {{ t[1] }}?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('team_add') }}">
+        <div class="modal-header" style="background: #16213e; color: white;">
+          <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Team</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3"><label class="form-label">Team Code *</label><input name="code" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Country Name *</label><input name="country" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Confederation Name *</label><input name="conf_name" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Confederation Code</label><input name="conf_code" class="form-control"></div>
+          <div class="mb-3"><label class="form-label">Wikipedia Page</label><input name="wiki" class="form-control"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

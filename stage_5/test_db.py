@@ -1,0 +1,12 @@
+from db_connection import get_connection
+conn = get_connection()
+cur = conn.cursor()
+cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name")
+tables = cur.fetchall()
+print("Tables in public schema:", [t[0] for t in tables])
+cur.execute("SELECT current_database()")
+print("Current DB:", cur.fetchone()[0])
+cur.execute("SELECT current_schema()")
+print("Current schema:", cur.fetchone()[0])
+cur.close()
+conn.close()

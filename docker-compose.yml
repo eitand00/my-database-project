@@ -43,6 +43,34 @@ services:
       - zoo_network
 
   # -------------------------
+  # Flask web app
+  # -------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_app
+    restart: always
+    working_dir: /app/stage_5
+    command: python app.py
+    volumes:
+      - ./stage_5:/app/stage_5
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME_SECRET: ${DB_NAME_SECRET}
+      DB_USER_SECRET: ${DB_USER_SECRET}
+      DB_PASSWORD_SECRET: ${DB_PASSWORD_SECRET}
+      ADMIN_CODE: ${ADMIN_CODE}
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - zoo_network
+
+  # -------------------------
   # Python importer
   # -------------------------
   importer:
@@ -69,6 +97,38 @@ services:
       - zoo_network
     profiles:
       - import
+
+  # -------------------------
+  # Full database setup (structure + data + constraints)
+  # -------------------------
+  setup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: db_setup
+    working_dir: /app
+    volumes:
+      - ./stage_1:/app/stage_1
+      - ./stage_2:/app/stage_2
+      - ./stage_3:/app/stage_3
+      - ./stage_4:/app/stage_4
+      - ./stage_5:/app/stage_5
+      - ./dataset:/app/dataset
+    command: ["bash", "/app/stage_5/setup/setup.sh"]
+    environment:
+      DB_NAME: ${DB_NAME_SECRET}
+      DB_USER: ${DB_USER_SECRET}
+      DB_PASSWORD: ${DB_PASSWORD_SECRET}
+      DB_HOST: db
+      DB_PORT: 5432
+      DATASET_DIR: /app/dataset
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - zoo_network
+    profiles:
+      - setup
 
 # -------------------------
 # Volumes
