@@ -12,7 +12,11 @@
 1. [הקדמה ומטרת המערכת](#הקדמה-ומטרת-המערכת)
 2. [אפיון המערכת (AI Studio)](#אפיון-המערכת-ai-studio)
 3. [תרשימי מבנה (ERD & DSD)](#תרשימי-מבנה-erd--dsd)
-4. [החלטות עיצוב וארכיטקטורה](#החלטות-עיצוב-וארכיטקטורה)
+4. [אינטגרציה עם מערכת ההימורים (שלב 3)](#אינטגרציה-עם-מערכת-ההימורים-שלב-3)
+5. [ממשק האינטרנט (שלב 5)](#ממשק-האינטרנט-שלב-5)
+6. [הוראות הפעלה](#הוראות-הפעלה)
+7. [כלים וטכנולוגיות](#כלים-וטכנולוגיות)
+8. [החלטות עיצוב וארכיטקטורה](#החלטות-עיצוב-וארכיטקטורה)
 
 ---
 
@@ -47,48 +51,158 @@
 
 ---
 
+## אינטגרציה עם מערכת ההימורים (שלב 3)
+בשלב זה חיברנו את בסיס הנתונים של המונדיאל למערכת הימורי הספורט, תוך התאמת הסכמה והטמעת טבלת חיבור מרכזית למשחקים משותפים. התהליך כלל הינדוס לאחור, התאמה של מודל הנתונים, וסנכרון מבוקר בין שתי המערכות כך שהנתונים ההיסטוריים נשמרו והאינטגרציה נשארה עקבית.
+
+**תרשימי השלב:**
+
+**DSD מקורי:**
+![תרשים DSD של שלב 3](stage_3/images/DSD2.png)
+
+**ERD מקורי:**
+![תרשים ERD של שלב 3](stage_3/images/ERD2.png)
+
+**ERD משולב:**
+![תרשים ERD משולב](stage_3/images/ERD3.png)
+
+**DSD משולב:**
+![תרשים DSD משולב](stage_3/images/DSD3.png)
+
+---
+
+## ממשק האינטרנט (שלב 5)
+בשלב זה בנינו אפליקציית Web מלאה (Flask) שמתחברת למסד הנתונים ומאפשרת צפייה, ניהול והרצת שאילתות דרך ממשק משתמש נוח. כל ה-SQL מרוכז ב-DB views ו-procedures - אין מחרוזות SQL בקוד ה-Python.
+
+### ארכיטקטורת האפליקציה
+- **Flask** (Python) - שרת ה-Web
+- **psycopg2** - שכבת התקשורת מול PostgreSQL
+- **Bootstrap 5** - עיצוב ממשק המשתמש
+- **Docker Compose** - הרצה מבוקרת של כל הקומפוננטות
+
+האפליקציה בנויה ממודולים נפרדים:
+- `app.py` - נקודת הכניסה
+- `db_connection.py` - פונקציות תקשורת מול המסד (ללא SQL hardcoded - הכל via views/procedures)
+- `routes/` - 10 מודולי ניתוב (teams, players, matches, stadiums, referees, events, reports, procedures, auth, procs)
+- `templates/` - תבניות HTML עם Bootstrap 5
+
+### מסכי המערכת
+
+**מסך הבית - Dashboard:**
+![מסך הבית](stage_5/images/home.png)
+
+**מסך נבחרות:**
+![נבחרות](stage_5/images/teams.png)
+
+**מסך שחקן:**
+![שחקן](stage_5/images/player.png)
+
+**מסך משחק:**
+![משחק](stage_5/images/match.png)
+
+**מסך דוחות:**
+![דוחות](stage_5/images/reports.png)
+
+**מסך Procedures:**
+![פרוצדורות](stage_5/images/procedures.png)
+
+**מסך פונקציות:**
+![פונקציות](stage_5/images/functions.png)
+
+**התחברות מנהל:**
+![Admin](stage_5/images/admin_login.png)
+
+---
+
+## הוראות הפעלה
+
+### דרישות מקדימות
+- Docker ו-Docker Compose מותקנים
+- קובץ `.env` בתיקיית הפרויקט הראשית (ראו `.env.example`)
+
+### התקנה והרצה בפקודה אחת
+
+```bash
+# 1. התקנת מסד הנתונים (טבלאות + נתונים + views + procedures)
+docker compose --profile setup run --rm setup
+
+# 2. הרצת האפליקציה
+docker compose up -d db web
+
+# 3. פתח בדפדפן:
+#    http://localhost:5000
+```
+
+### עצירה
+```bash
+docker compose down
+```
+
+### קוד מנהל (Admin)
+- לחץ על כפתור **Admin** בתפריט העליון
+- קוד ברירת מחדל: `admin_code123`
+- משתמש רגיל: צפייה בלבד
+- מנהל: הוספה, עריכה, מחיקה והפעלת Procedures
+
+---
+
+## כלים וטכנולוגיות
+
+### שפות וספריות
+| כלי | שימוש |
+|------|-------|
+| **Python / Flask** | שרת Web, ניתוב בקשות, תבניות |
+| **psycopg2** | התחברות ל-PostgreSQL מהאפליקציה |
+| **python-dotenv** | טעינת משתני סביבה מקובץ `.env` |
+| **PostgreSQL** | מסד נתונים רלציוני |
+| **PL/pgSQL** | פונקציות, פרוצדורות וטריגרים בצד המסד |
+| **Bootstrap 5** | עיצוב ממשק המשתמש |
+| **JavaScript** | שליחת בקשות AJAX ל-API |
+
+### Docker
+- **PostgreSQL** - קונטיינר מסד נתונים
+- **pgAdmin** - ממשק ניהול גרפי למסד
+- **setup** - קונטיינר התקנה חד-פעמי (profile `setup`) שיוצר טבלאות, מייבא נתונים (מ-CSV + betting backup), ומתקין את כל אובייקטי המסד
+- **web** - קונטיינר Flask לשרת האפליקציה
+
+### מבנה הפרויקט
+```
+stage_1/          - טבלאות + תסריט ייצור נתונים (generate_data.py) + Dataset
+stage_2/          - אילוצים (Constraints)
+stage_3/          - מערכת הימורים + אינטגרציה (backup2.sql, Integrate.sql)
+stage_4/          - פונקציות, פרוצדורות וטריגרים להרצת הימורים
+stage_5/          - אפליקציית Web + אובייקטי מסד מתקדמים
+  setup/
+    setup.sh      - סקריפט התקנה מלא ל-Docker
+    install_objects.sql - התקנת כל אובייקטי המסד
+  sql/
+    entity/       - 10 קבצי SQL מאוחדים לפי ישות (teams, players, matches, ...)
+    full_install.sql  - יצירת 8 טבלאות מונדיאל
+  routes/         - 10 מודולי ניתוב Flask
+  templates/      - תבניות HTML (Bootstrap 5)
+  db_connection.py - שכבת תקשורת מול המסד
+  app.py          - נקודת כניסה לאפליקציה
+```
+
+### זרימת התקנה (Docker setup)
+```
+1. full_install.sql     → DROP + CREATE 8 טבלאות מונדיאל
+2. generate_data.py     → יבוא נתונים מ-CSV
+3. backup2.sql          → יצירת 6 טבלאות הימורים + נתונים
+4. Integrate.sql        → חיבור טבלאות המונדיאל וההימורים
+5. Constraints.sql      → אילוצים (FK, ALTER COLUMN Minute)
+6. Functions + Triggers → פונקציות הימורים + טריגרים
+7. Views (stage_3)      → WorldCup_Odds_View, Bettors_On_WorldCup_View
+8. Entity files (stage_5) → 10 קבצי SQL מאוחדים עם ALL views + procs
+9. fill_odds_in_empty_games → השלמת odds לכל המשחקים
+```
+
+---
+
 ## החלטות עיצוב וארכיטקטורה
 במהלך תכנון בסיס הנתונים, קיבלנו מספר החלטות ארכיטקטוניות מרכזיות:
 * **ישויות אב/בן (Super-type / Sub-type):** יצרנו טבלת `PERSON` מרכזית המכילה תכונות משותפות (כמו שם ותאריך לידה), ממנה יורשות הטבלאות `PLAYER` (שחקן) ו-`REFEREE` (שופט). עיצוב זה מונע כפילות נתונים ומפשט קיבוץ סטטיסטי.
 * **טבלאות מקשרות לאירועים וסטטיסטיקות:** יצרנו טבלאות ייעודיות (`MATCH_EVENT` ו-`PLAYER_MATCH_STATS`) המקושרות גם למשחק וגם לשחקן. דבר זה מאפשר מעקב גרנולרי (פרטני) אחר אירועים ואגרגציות `GROUP BY` יעילות.
 * **שילוב נתונים היסטוריים אמיתיים:** התאמנו את הסכמה שלנו כך שתכיל אך ורק מאגרי נתונים מהעולם האמיתי. וידאנו שסוגי הנתונים (Data Types) והאילוצים (Constraints) שלנו תואמים לתרחישים היסטוריים אותנטיים, מבלי לפברק רשומות או לייצר מצבים לא הגיוניים.
-
-  
-## Quick Start
-Required configuration:
-
-- `DB_USER_SECRET` - PostgreSQL username used by the database container
-- `DB_PASSWORD_SECRET` - PostgreSQL password used by the database container
-- `DB_NAME_SECRET` - PostgreSQL database name
-- `PGADMIN_EMAIL` - login email for pgAdmin
-- `PGADMIN_PASSWORD` - login password for pgAdmin
-- `ADMIN_CODE` - login password for admin mode
-
-You can copy `.env.example` to `.env` and edit the values before running Docker Compose.
-
-build importer image:
-docker compose build importer
-
-1) First-time (start DB + pgAdmin, then run importer):
-
-```bash
-docker compose up -d db pgadmin
-docker compose --profile import run --rm importer
-```
-
-2) If the schema file changed, recreate the DB schema using the mounted file:
-
-```bash
-docker compose exec db sh -lc 'psql -U user_db -d world_cup_db -f /stage_1/createTables.sql'
-```
-
-3) Troubleshooting / explicit run (bypass image CMD and show script errors directly):
-
-```bash
-docker compose --profile import run --rm -T importer python -u stage_1/Programing/generate_data.py
-```
-
-Notes:
-- The database container only mounts `./stage_1` at `/stage_1`, which is the path used in the schema command above.
-- The importer mounts `./stage_1` and `./dataset` so it can read the ETL script and CSV files from the host.
-
+* **אפס SQL בקוד Python:** כל ה-SQL מרוכז ב-DB views (`vw_*`) ו-procedures (`sp_*`/`CALL`). קובץ `db_connection.py` מכיל רק קריאות לפונקציות Python שמפעילות את אובייקטי המסד.
+* **Docker-first:** התקנת המסד והרצת האפליקציה דרך Docker Compose - פקודה אחת לכל הפעולה, ללא תלות בסביבת הפיתוח המקומית.
+* **קונסולידציה ל-10 קבצי ישות:** 47 קבצי SQL בודדים (views + functions + procedures) אוחדו ל-10 קבצים לפי ישות (teams, players, matches, stadiums, referees, events, reports, dashboard, functions, betting) לניהול קל יותר.
