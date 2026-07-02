@@ -39,66 +39,206 @@
 בודדנו 10 משחקי מונדיאל אקראיים והמרנו 10 משחקים עם אותו מספר סידורי שיצביעו על משחקי המונדיאל במקום על המשחקים השמורים במסד הנתונים של ההימורים
 
 ## 4. מבטים ושאילתות מורכבות (Views)
-כדי לייעל את תהליך תשאול הנתונים דרך צומת המיפוי, פיתחנו שני מבטים המסתירים את מורכבות ה-JOIN מהמשתמש קצה.
+כדי לייעל את תהליך תשאול הנתונים ולספק ניתוחי עומק, פיתחנו שני מבטים מורכבים המשלבים מספר רב של טבלאות לטובת הסתרת מורכבות ה-JOIN ממשתמש הקצה וביצוע אגרגציות מתקדמות.
 
-מבט 1: WorldCup_Odds_View (מנקודת המבט של סטטיסטיקות המונדיאל)
-תיאור המבט: המבט מציג את משחקי המונדיאל (תאריך, שלב, ושמות הנבחרות) משולבים יחד עם יחסי הזכייה (Odds) שהוצעו עבורם על ידי סוכנויות ההימורים.
+### מבט 1: WorldCup_Team_Performance_View (ניתוח ביצועי הנבחרות)
+#### תיאור המבט:
+- מבט זה משלב 5 טבלאות מרכזיות: TEAM, MATCH, PLAYER_MATCH_STATS, MATCH_EVENT, ו-STADIUM.
+- הוא בוחן את ביצועי הנבחרת מנקודת המבט של הטורניר: סופר את מספר המשחקים של כל נבחרת, מזהה שחקני מפתח, ומחשב סך שערים.
+- המבט מחשב את התפלגות השחקנים לפי עמדות (שוערים, הגנה, קשרים, חלוצים) ומציג את ממוצע תכולת האצטדיונים שבהם הנבחרת שיחקה.
+- תועלת: הצגת מבנה הנבחרת והדינמיקה שלה בכל שלב בטורניר.
 
-שאילתה 1: משחקים עם פייבוריטית ברורה
+```sql
+CREATE OR REPLACE VIEW WorldCup_Team_Performance_View AS
+SELECT 
+    t.TeamCode,
+    t.CountryName AS Team_Name,
+    t.ConfederationName AS Confederation,
+    COUNT(DISTINCT m.MatchID) AS Total_Tournament_Matches,
+    STRING_AGG(DISTINCT m.Stage, ', ') AS Tournament_Stages_Reached,
+    COUNT(DISTINCT CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+        (SELECT ID FROM PLAYER WHERE TeamCode = t.TeamCode) 
+        THEN me.MatchEventID END) AS Total_Goals_Scored,
+    COUNT(DISTINCT CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+        (SELECT ID FROM PLAYER WHERE TeamCode = t.TeamCode) 
+        THEN me.ID END) AS Different_Goal_Scorers,
+    COUNT(DISTINCT pms.PlayerID) AS Total_Different_Players_Used,
+    COUNT(DISTINCT CASE WHEN pms.Position = 'Goalkeeper' THEN pms.PlayerID END) AS Goalkeepers_Used,
+    COUNT(DISTINCT CASE WHEN pms.Position = 'Defender' THEN pms.PlayerID END) AS Defenders_Used,
+    COUNT(DISTINCT CASE WHEN pms.Position = 'Midfielder' THEN pms.PlayerID END) AS Midfielders_Used,
+    COUNT(DISTINCT CASE WHEN pms.Position = 'Forward' THEN pms.PlayerID END) AS Forwards_Used,
+    STRING_AGG(DISTINCT s.Name, ' | ') AS Stadiums_Played_In,
+    ROUND(AVG(s.Capacity)::NUMERIC, 0) AS Average_Stadium_Capacity
+FROM TEAM t
+LEFT JOIN MATCH m ON (t.TeamCode = m.HomeTeamCode OR t.TeamCode = m.GuestTeamCode)
+LEFT JOIN PLAYER_MATCH_STATS pms ON m.MatchID = pms.MatchID 
+    AND pms.PlayerID IN (SELECT ID FROM PLAYER WHERE TeamCode = t.TeamCode)
+LEFT JOIN MATCH_EVENT me ON m.MatchID = me.MatchID AND me.EventType = 'Goal'
+LEFT JOIN STADIUM s ON m.StadiumID = s.StadiumID
+GROUP BY t.TeamCode, t.CountryName, t.ConfederationName
+ORDER BY Total_Tournament_Matches DESC, Total_Goals_Scored DESC;
+```
+![HWO](images/viewRun1.png)
 
-תיאור: שליפת משחקי המונדיאל שבהם הקבוצה הביתית זכתה ליחס זכייה נמוך מ-3.0, ממוינים מהיחס הנמוך (הבטוח) ביותר כלפי מעלה.
-
-קוד השאילתה:
+#### שאילתה 1.1: הנבחרות המובילות בטורניר עם סטטיסטיקות שחקנים
+תיאור: שליפת הנבחרות ששיחקו לפחות משחק אחד, ממוינות לפי כמות השערים שהבקיעו בסדר יורד, תוך חישוב ממוצע שערים למשחק והצגת התפלגות השחקנים שהשתתפו לפי עמדה על המגרש.
 
 ```SQL
-SELECT HomeTeam, GuestTeam, Stage, home_win_odd 
-FROM WorldCup_Odds_View 
-WHERE home_win_odd < 3.0
-ORDER BY home_win_odd ASC;
+SELECT 
+    Team_Name, 
+    Confederation,
+    Total_Tournament_Matches,
+    Total_Goals_Scored,
+    ROUND(Total_Goals_Scored::NUMERIC / NULLIF(Total_Tournament_Matches, 0), 2) AS Goals_Per_Match,
+    Different_Goal_Scorers,
+    Total_Different_Players_Used,
+    Goalkeepers_Used || ' שוערים, ' || Defenders_Used || ' שחקני הגנה, ' || 
+    Midfielders_Used || ' קשרים, ' || Forwards_Used || ' חלוצים' AS Player_Distribution
+FROM WorldCup_Team_Performance_View
+WHERE Total_Tournament_Matches > 0
+ORDER BY Total_Goals_Scored DESC;
 ```
-![HWO](images/HWO.png)
+![HWO](images/testview1.1.png)
 
-שאילתה 2: משחקים המועדים לתיקו
+#### שאילתה 1.2: ניתוח רוטציית שחקנים ושימוש באצטדיונים
+תיאור: מציגה את הנבחרות לפי רמת סבב (רוטציית) השחקנים שלהן, מחשבת כמה שחקנים שונים שותפו בממוצע למשחק, ומציגה את האצטדיונים שבהם הנבחרת שיחקה.
 
-תיאור: שליפת 5 משחקי המונדיאל שמקבלים את יחס הזכייה הגבוה והמסוכן ביותר לתוצאת תיקו.
-
-קוד השאילתה:
 
 ```SQL
-SELECT MatchDate, HomeTeam, GuestTeam, draw_odds 
-FROM WorldCup_Odds_View 
-ORDER BY draw_odds DESC 
-LIMIT 5;
+SELECT 
+    Team_Name,
+    Tournament_Stages_Reached,
+    Total_Different_Players_Used,
+    ROUND(Total_Different_Players_Used::NUMERIC / NULLIF(Total_Tournament_Matches, 0), 2) AS Players_Per_Match,
+    Average_Stadium_Capacity,
+    Stadiums_Played_In
+FROM WorldCup_Team_Performance_View
+WHERE Total_Tournament_Matches > 0
+ORDER BY Total_Different_Players_Used DESC;
 ```
-![MDO](images/MDO.png)
+![MDO](images/testview1.2.png)
 
-מבט 2: Bettors_On_WorldCup_View (מנקודת המבט של מערכת ההימורים)
-תיאור המבט: המבט מרכז את הפעילות הפיננסית של המשתמשים, ומציג את השם המלא של המהמר, סכום ההימור, התוצאה החזויה, ופרטי משחק המונדיאל המדויק שעליו התבצע ההימור.
+### מבט 2: Match_Odds_Analysis_View (ניתוח דיוק יחסי הזכייה מול תוצאות אמת)
+#### תיאור המבט:
+- מבט זה משלב את הטבלאות MATCH, GLOBAL_MATCH, odds, TEAM, STADIUM, ו-MATCH_EVENT.
+- הוא מאפשר ניתוח של דיוק תחזיות ה-odds (יחסי הזכייה) מול התוצאות בפועל שקרו על המגרש, ללא תלות בטבלת המשתמשים או ההימורים האישיים.
+- המבט מחשב את כמות השערים לכל קבוצה, קובע מי הייתה הפייבוריטית של סוכנויות ההימורים, מי ניצחה בפועל, ומסמן האם התרחשה הפתעה (Upset) או שהתוצאה הייתה צפויה.
 
+```sql
+CREATE OR REPLACE VIEW Match_Odds_Analysis_View AS
+SELECT
+    m.MatchID,
+    m.MatchDate,
+    m.Stage,
+    ht.CountryName AS Home_Team,
+    gt.CountryName AS Away_Team,
+    s.Name AS Stadium,
+    s.Capacity AS Stadium_Capacity,
+    o.home_win_odd,
+    o.draw_odd,
+    o.away_win_odd,
+    SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+        (SELECT ID FROM PLAYER WHERE TeamCode = m.HomeTeamCode) THEN 1 ELSE 0 END) AS Home_Goals,
+    SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+        (SELECT ID FROM PLAYER WHERE TeamCode = m.GuestTeamCode) THEN 1 ELSE 0 END) AS Away_Goals,
+    SUM(CASE WHEN me.EventType = 'Goal' THEN 1 ELSE 0 END) AS Total_Goals,
+    CASE 
+        WHEN o.home_win_odd < o.draw_odd AND o.home_win_odd < o.away_win_odd THEN 'Home'
+        WHEN o.draw_odd < o.home_win_odd AND o.draw_odd < o.away_win_odd THEN 'Draw'
+        ELSE 'Away'
+    END AS Bookmaker_Favorite,
+    CASE 
+        WHEN SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.HomeTeamCode) THEN 1 ELSE 0 END) > 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.GuestTeamCode) THEN 1 ELSE 0 END)
+        THEN 'Home'
+        WHEN SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.HomeTeamCode) THEN 1 ELSE 0 END) = 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.GuestTeamCode) THEN 1 ELSE 0 END)
+        THEN 'Draw'
+        ELSE 'Away'
+    END AS Actual_Result,
+    CASE 
+        WHEN o.home_win_odd < o.draw_odd AND o.home_win_odd < o.away_win_odd AND 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.HomeTeamCode) THEN 1 ELSE 0 END) > 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.GuestTeamCode) THEN 1 ELSE 0 END)
+        THEN 'Favorite Won'
+        WHEN o.draw_odd < o.home_win_odd AND o.draw_odd < o.away_win_odd AND 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.HomeTeamCode) THEN 1 ELSE 0 END) = 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.GuestTeamCode) THEN 1 ELSE 0 END)
+        THEN 'Favorite Won'
+        WHEN o.away_win_odd < o.home_win_odd AND o.away_win_odd < o.draw_odd AND 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.GuestTeamCode) THEN 1 ELSE 0 END) > 
+             SUM(CASE WHEN me.EventType = 'Goal' AND me.ID IN 
+            (SELECT ID FROM PLAYER WHERE TeamCode = m.HomeTeamCode) THEN 1 ELSE 0 END)
+        THEN 'Favorite Won'
+        ELSE 'Upset / Draw'
+    END AS Favorite_Result
+FROM MATCH m
+JOIN GLOBAL_MATCH gm ON gm.WCMatchID = m.MatchID
+JOIN odds o ON gm.GlobalMatchID = o.global_match_id
+JOIN TEAM ht ON m.HomeTeamCode = ht.TeamCode
+JOIN TEAM gt ON m.GuestTeamCode = gt.TeamCode
+LEFT JOIN STADIUM s ON m.StadiumID = s.StadiumID
+LEFT JOIN MATCH_EVENT me ON m.MatchID = me.MatchID AND me.EventType = 'Goal'
+GROUP BY m.MatchID, m.MatchDate, m.Stage, ht.CountryName, gt.CountryName, 
+         s.Name, s.Capacity, o.home_win_odd, o.draw_odd, o.away_win_odd;
+```
+![HWO](images/viewrun2.png)
 שאילתה 1: פרופיל מהמרים מובילים
 
 תיאור: שליפת משתמשים שהשקיעו מעל 50 יחידות מטבע במשחק מונדיאל יחיד, מסודרים בסדר יורד של סכום ההימור כדי לזהות לקוחות VIP.
 
-קוד השאילתה:
+#### שאילתה 2.1: זיהוי הפתעות בטורניר (Upsets)
+תיאור: שליפת כל המשחקים שבהם התוצאה בפועל סתרה את תחזיות ה-odds (למשל, האנדרדוג ניצח או שהמשחק הסתיים בתיקו למרות פייבוריטית ברורה). התוצאות ממוינות מהמשחק העדכני ביותר.
 
 ```SQL
-SELECT Bettor_Name, bet_amount, predicted_result, HomeTeam, GuestTeam 
-FROM Bettors_On_WorldCup_View 
-WHERE bet_amount > 50
-ORDER BY bet_amount DESC;
+SELECT
+    MatchID,
+    MatchDate,
+    Stage,
+    Home_Team,
+    Away_Team,
+    Stadium,
+    Bookmaker_Favorite,
+    Actual_Result,
+    Favorite_Result,
+    Home_Goals,
+    Away_Goals,
+    Total_Goals
+FROM Match_Odds_Analysis_View
+WHERE Favorite_Result = 'Upset / Draw'
+ORDER BY MatchDate DESC;
 ```
-![HB](images/HB.png)
+![HB](images/testview2.1.png)
 
-שאילתה 2: ניתוח מחזורי מסחר למשחק
+#### שאילתה 2.2: משחקים צפויים (הפייבוריטית ניצחה)
+תיאור: שליפת המשחקים שבהם סוכנויות ההימורים צדקו בתחזית שלהן, והקבוצה בעלת יחס הזכייה הנמוך ביותר (הפייבוריטית) אכן ניצחה בפועל.
 
-תיאור: ביצוע אגרגציה (SUM ו-GROUP BY) לחישוב סך כל הכסף שהושקע על כל משחק מונדיאל בנפרד, מה שמאפשר לזהות אילו משחקים משכו את מירב תשומת הלב הכלכלית.
-
-קוד השאילתה:
 
 ```SQL
-SELECT MatchDate, HomeTeam, GuestTeam, SUM(bet_amount) AS Total_Money_Placed
-FROM Bettors_On_WorldCup_View
-GROUP BY MatchDate, HomeTeam, GuestTeam
-ORDER BY Total_Money_Placed DESC;
+SELECT
+    MatchID,
+    MatchDate,
+    Stage,
+    Home_Team,
+    Away_Team,
+    Stadium,
+    Bookmaker_Favorite,
+    Actual_Result,
+    Favorite_Result,
+    Home_Goals,
+    Away_Goals,
+    Total_Goals
+FROM Match_Odds_Analysis_View
+WHERE Favorite_Result = 'Favorite Won'
+ORDER BY MatchDate DESC;
 ```
-![MBG](images/MBG.png)
+![MBG](images/testview2.2.png)
