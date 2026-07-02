@@ -12,6 +12,7 @@
 <div class="container">
   <div class="row mb-4">
     <div class="col-md-3 mb-3">
+      <a href="{{ url_for('matches') }}" class="stat-link">
       <div class="card stat-card">
         <div class="card-body">
           <div class="stat-icon"><i class="bi bi-calendar-event-fill" style="color: #e94560;"></i></div>
@@ -19,8 +20,10 @@
           <div class="stat-label">Matches</div>
         </div>
       </div>
+      </a>
     </div>
     <div class="col-md-3 mb-3">
+      <a href="{{ url_for('teams') }}" class="stat-link">
       <div class="card stat-card">
         <div class="card-body">
           <div class="stat-icon"><i class="bi bi-people-fill" style="color: #0f3460;"></i></div>
@@ -28,8 +31,10 @@
           <div class="stat-label">Teams</div>
         </div>
       </div>
+      </a>
     </div>
     <div class="col-md-3 mb-3">
+      <a href="{{ url_for('players') }}" class="stat-link">
       <div class="card stat-card">
         <div class="card-body">
           <div class="stat-icon"><i class="bi bi-person-fill" style="color: #28a745;"></i></div>
@@ -37,8 +42,10 @@
           <div class="stat-label">Players</div>
         </div>
       </div>
+      </a>
     </div>
     <div class="col-md-3 mb-3">
+      <a href="{{ url_for('stadiums') }}" class="stat-link">
       <div class="card stat-card">
         <div class="card-body">
           <div class="stat-icon"><i class="bi bi-building" style="color: #ffc107;"></i></div>
@@ -46,6 +53,7 @@
           <div class="stat-label">Stadiums</div>
         </div>
       </div>
+      </a>
     </div>
   </div>
 
