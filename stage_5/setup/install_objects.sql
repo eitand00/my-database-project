@@ -25,7 +25,7 @@
 -- ====================================================================
 -- STAGE 3 — VIEWS (reference GLOBAL_MATCH + betting tables)
 -- ====================================================================
-\i stage_3/Views.sql
+\i stage_5/sql/views.sql
 
 -- ====================================================================
 -- STAGE 5 — CONSOLIDATED ENTITY FILES (dependency order)
